@@ -1,2 +1,3 @@
-# AyamKu
-Aplikasi Pemesanan Ayam Potong
+# Ayam Segar
+
+A new Flutter project.
