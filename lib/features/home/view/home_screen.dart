@@ -14,10 +14,6 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: AppTheme.surface.withValues(alpha: 0.95),
         surfaceTintColor: Colors.transparent,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppTheme.onSurfaceVariant),
-          onPressed: () {},
-        ),
         actions: [
           IconButton(
             icon: const Badge(
