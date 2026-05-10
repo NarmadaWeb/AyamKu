@@ -53,11 +53,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'mock-api-key',
-    appId: 'mock-app-id',
-    messagingSenderId: 'mock-sender-id',
-    projectId: 'mock-project-id',
-    storageBucket: 'mock-project-id.appspot.com',
+    apiKey: 'AIzaSyD9AxpMdwNjon7bI6ySG68jCc72bMeW4Tw',
+    appId: '1:832787329793:android:eea7755332d8d655946100',
+    messagingSenderId: '832787329793',
+    projectId: 'ayamku-a8b8a',
+    storageBucket: 'ayamku-a8b8a.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
