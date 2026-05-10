@@ -12,7 +12,6 @@ build/
 *.iws
 *.ipr
 ios/
-android/
 macos/
 linux/
 windows/
