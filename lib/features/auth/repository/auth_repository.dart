@@ -7,7 +7,7 @@ part 'auth_repository.g.dart';
 
 @riverpod
 AuthRepository authRepository(Ref ref) {
-  return AuthRepository(FirebaseAuth.instance, FirebaseFirestore.instance, GoogleSignIn(scopes: ['email']));
+  return AuthRepository(FirebaseAuth.instance, FirebaseFirestore.instance, GoogleSignIn.instance);
 }
 
 class AuthRepository {
