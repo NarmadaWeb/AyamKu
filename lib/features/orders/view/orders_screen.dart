@@ -1,56 +1,93 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../repository/order_repository.dart';
+import '../model/order.dart';
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ordersState = ref.watch(userOrdersProvider);
+
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        leading: IconButton(icon: const Icon(Icons.menu, color: AppTheme.primary), onPressed: () {}),
         actions: [IconButton(icon: const Icon(Icons.notifications, color: AppTheme.primary), onPressed: () {})],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16).copyWith(bottom: 100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Pesanan Aktif', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            _buildActiveOrder(context),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: ordersState.when(
+        data: (orders) {
+          if (orders.isEmpty) {
+            return const Center(child: Text('Belum ada pesanan.'));
+          }
+
+          final activeOrders = orders.where((o) => o.status != 'Selesai' && o.status != 'Dibatalkan').toList();
+          final pastOrders = orders.where((o) => o.status == 'Selesai' || o.status == 'Dibatalkan').toList();
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16).copyWith(bottom: 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Riwayat Pesanan', style: Theme.of(context).textTheme.headlineSmall),
-                TextButton(
-                  onPressed: () {},
-                  child: const Row(
-                    children: [
-                      Text('Lihat Semua', style: TextStyle(fontWeight: FontWeight.bold)),
-                      Icon(Icons.chevron_right, size: 18),
-                    ],
-                  ),
+                if (activeOrders.isNotEmpty) ...[
+                  Text('Pesanan Aktif', style: Theme.of(context).textTheme.headlineSmall),
+                  const SizedBox(height: 8),
+                  ...activeOrders.map((o) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildActiveOrder(context, o),
+                      )),
+                  const SizedBox(height: 24),
+                ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Riwayat Pesanan', style: Theme.of(context).textTheme.headlineSmall),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Row(
+                        children: [
+                          Text('Lihat Semua', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Icon(Icons.chevron_right, size: 18),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 8),
+                if (pastOrders.isEmpty) const Text('Belum ada riwayat pesanan.'),
+                ...pastOrders.map((o) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildPastOrder(
+                        context,
+                        '${DateFormat('dd MMM yyyy').format(o.createdAt)} • ${o.status}',
+                        o.totalPrice.toStringAsFixed(0),
+                        o.items.isNotEmpty ? o.items.first.toString() : 'Pesanan',
+                        o.items.length > 1 ? '+${o.items.length - 1} item lainnya' : '',
+                        null,
+                        true,
+                      ),
+                    )),
               ],
             ),
-            const SizedBox(height: 8),
-            _buildPastOrder(context, '12 Okt 2023 • Berhasil', '85.000', 'Ayam Pejantan Utuh (Potong 8)', '1x Dada Ayam Fillet, 1x Ati Ampela', 'https://lh3.googleusercontent.com/aida-public/AB6AXuAk4xzz80FEaJQLpc4wOCxdV7kt9T_kqLKAEOuPS3FnFG7bJpCGkqKBAbOWRHiKDc__V-AWZmoJozzgIsZc9_6F3pWB-B_uFdWAlTYcGZLtpjCxakN-raoGLvyok8K5XABhcStxwPQrXqX6bKuEv7dTpQU1AWzX-5n4vSzOyosDGuJOirydWiQ0VEtxvap8XZaFz6SD9hgLtG-zpPa59Ei7De9YN0BBU1YwaVc_0RbfgYT8rnIZTHpU6EQfFX2DCiq7dauLF3K7bw', true),
-            const SizedBox(height: 12),
-            _buildPastOrder(context, '05 Okt 2023 • Berhasil', '45.000', 'Dada Ayam Fillet (500g)', '1x Bumbu Kuning Marinasi', 'https://lh3.googleusercontent.com/aida-public/AB6AXuCoCrlSea5hUaynfw6_AsB754sTDmTb_QKGdBcZDLjxzlhErpMJGfxZegP-GiIWXv0AGLnV19F8bcMgbt4-ZK9pHNPOMM2jeOSBaVaZDrGtmRglB-lI3JpJWhTA0H8YZmRoewIuLFDYOYVK1HQcJ_a2s8jw9GMFeAtmwsgIU9dIIA4-vr-CpcqOgtjlBtWE5I9biqW0RnPIZe-XUP312qzhEaVcto6kxyabdoMJZE8s7_qqYfsmFziYupYH_Vqk-I3a99BddpECQQ', false),
-          ],
-        ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
       bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
-  Widget _buildActiveOrder(BuildContext context) {
+  Widget _buildActiveOrder(BuildContext context, OrderModel order) {
+    bool isConfirmed = order.status != 'Menunggu Konfirmasi';
+    bool inTransit = order.status == 'Dalam Pengiriman';
+    bool isDone = order.status == 'Selesai';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -68,7 +105,7 @@ class OrdersScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('ID Pesanan', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                  Text('ORD-892471', style: Theme.of(context).textTheme.labelLarge),
+                  Text(order.id.isEmpty ? 'Baru' : order.id, style: Theme.of(context).textTheme.labelLarge),
                 ],
               ),
               Container(
@@ -78,52 +115,19 @@ class OrdersScreen extends StatelessWidget {
                   children: [
                     const Icon(Icons.local_shipping, size: 14, color: AppTheme.onSecondaryContainer),
                     const SizedBox(width: 4),
-                    Text('Dalam Pengiriman', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSecondaryContainer)),
+                    Text(order.status, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSecondaryContainer)),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Container(
-            height: 150,
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppTheme.surfaceContainerHighest),
-              image: const DecorationImage(
-                image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuCJ4b8E5k_5wzJewzRekhLHu7NMXKIcvUZ7H1yQC1BCBo3h5Z8bBZ3dPm9GlsMCay0xDzGt27knZDe5nJvbCPcuzAw69rMBbOEl3l0uF3EvyL7lmExAj3rSvQyXxQSF7Bctypcd84-5G1VxaRK1MMc93jGkaidQ8nXkq9XDL-e4bOqk_yrBIuAv9O3WPuk6O3V29fkqy_78fZer4sZtMzXfaNKhYzsTdi2KbLLr1NCUQ9umASxJhMEKs3lKpTiEKma0DMXbhHu9iw'),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(Colors.black12, BlendMode.darken),
-              ),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  bottom: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(8)),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.schedule, size: 16, color: AppTheme.primary),
-                        const SizedBox(width: 4),
-                        Text('15 mnt lagi', style: Theme.of(context).textTheme.labelLarge),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           const Divider(),
           const SizedBox(height: 16),
-          _timelineItem(context, Icons.receipt_long, 'Pesanan Diproses', '08:15 AM', true, true),
-          _timelineItem(context, Icons.content_cut, 'Sedang Dipotong & Dibersihkan', '08:30 AM • Standar Halal & Higienis', true, true),
-          _timelineItem(context, Icons.local_shipping, 'Dalam Pengiriman', '09:10 AM • Kurir menuju lokasi Anda', true, false, isCurrent: true),
-          _timelineItem(context, Icons.home, 'Sampai Tujuan', 'Estimasi 09:25 AM', false, false),
+          _timelineItem(context, Icons.receipt_long, 'Pesanan Diproses', DateFormat('hh:mm a').format(order.createdAt), true, true),
+          _timelineItem(context, Icons.content_cut, 'Pesanan di konfirmasi', 'Pesanan sedang disiapkan', isConfirmed, true),
+          _timelineItem(context, Icons.local_shipping, 'Pesanan sedang di dalam perjalanan', 'Kurir menuju lokasi Anda', inTransit, true, isCurrent: inTransit),
+          _timelineItem(context, Icons.home, 'Sampai Tujuan', 'Pesanan selesai', isDone, false),
         ],
       ),
     );
@@ -170,7 +174,7 @@ class OrdersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPastOrder(BuildContext context, String date, String price, String title, String subtitle, String imgUrl, bool isPrimaryBtn) {
+  Widget _buildPastOrder(BuildContext context, String date, String price, String title, String subtitle, String? imgUrl, bool isPrimaryBtn) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -191,12 +195,14 @@ class OrdersScreen extends StatelessWidget {
           const Divider(),
           Row(
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), image: DecorationImage(image: NetworkImage(imgUrl), fit: BoxFit.cover)),
-              ),
-              const SizedBox(width: 16),
+              if (imgUrl != null) ...[
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), image: DecorationImage(image: NetworkImage(imgUrl), fit: BoxFit.cover)),
+                ),
+                const SizedBox(width: 16),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

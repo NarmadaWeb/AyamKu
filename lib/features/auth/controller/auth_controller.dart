@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../repository/auth_repository.dart';
+import '../model/user_model.dart';
 
 part 'auth_controller.g.dart';
 
@@ -11,16 +12,24 @@ class AuthController extends _$AuthController {
     return ref.watch(authRepositoryProvider).authStateChanges;
   }
 
+  Future<UserModel?> getUserData() async {
+    final user = state.value;
+    if (user != null) {
+      return ref.read(authRepositoryProvider).getUserData(user.uid);
+    }
+    return null;
+  }
+
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() =>
         ref.read(authRepositoryProvider).signInWithEmailAndPassword(email, password).then((_) => ref.read(authRepositoryProvider).currentUser));
   }
 
-  Future<void> createUserWithEmailAndPassword(String email, String password) async {
+  Future<void> createUserWithEmailAndPassword(String email, String password, String phone, String address) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() =>
-        ref.read(authRepositoryProvider).createUserWithEmailAndPassword(email, password).then((_) => ref.read(authRepositoryProvider).currentUser));
+        ref.read(authRepositoryProvider).createUserWithEmailAndPassword(email, password, phone, address).then((_) => ref.read(authRepositoryProvider).currentUser));
   }
 
   Future<void> signInWithGoogle() async {

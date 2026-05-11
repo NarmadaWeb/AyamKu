@@ -12,6 +12,8 @@ class LoginScreen extends HookConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
+    final phoneController = useTextEditingController();
+    final addressController = useTextEditingController();
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final isLogin = useState(true);
 
@@ -26,6 +28,8 @@ class LoginScreen extends HookConsumerWidget {
           ref.read(authControllerProvider.notifier).createUserWithEmailAndPassword(
                 emailController.text.trim(),
                 passwordController.text.trim(),
+                phoneController.text.trim(),
+                addressController.text.trim(),
               );
         }
       }
@@ -117,6 +121,29 @@ class LoginScreen extends HookConsumerWidget {
                         ),
                         validator: (value) => value == null || value.isEmpty ? 'Password tidak boleh kosong' : null,
                       ),
+
+                      if (!isLogin.value) ...[
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: phoneController,
+                          decoration: InputDecoration(
+                            labelText: 'Nomor Handphone',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            prefixIcon: const Icon(Icons.phone_outlined),
+                          ),
+                          validator: (value) => value == null || value.isEmpty ? 'Nomor Handphone tidak boleh kosong' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: addressController,
+                          decoration: InputDecoration(
+                            labelText: 'Alamat Lengkap',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            prefixIcon: const Icon(Icons.location_on_outlined),
+                          ),
+                          validator: (value) => value == null || value.isEmpty ? 'Alamat tidak boleh kosong' : null,
+                        ),
+                      ],
                       const SizedBox(height: 8),
 
                       if (isLogin.value)

@@ -15,15 +15,15 @@ final authControllerProvider = AuthControllerProvider._();
 final class AuthControllerProvider
     extends $StreamNotifierProvider<AuthController, User?> {
   AuthControllerProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'authControllerProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'authControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
 
   @override
   String debugGetCreateSourceHash() => _$authControllerHash();
@@ -33,7 +33,7 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 }
 
-String _$authControllerHash() => r'8c7a6dd0c942d60eb8a6acc9498e4203e02ab515';
+String _$authControllerHash() => r'740fa2d7a1f498ee1f179d4d761a3618e21f2fd1';
 
 abstract class _$AuthController extends $StreamNotifier<User?> {
   Stream<User?> build();
@@ -41,14 +41,11 @@ abstract class _$AuthController extends $StreamNotifier<User?> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<User?>, User?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<User?>, User?>,
-              AsyncValue<User?>,
-              Object?,
-              Object?
-            >;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<AsyncValue<User?>, User?>,
+        AsyncValue<User?>,
+        Object?,
+        Object?>;
     element.handleCreate(ref, build);
   }
 }

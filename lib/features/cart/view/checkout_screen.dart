@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../auth/controller/auth_controller.dart';
+import '../../orders/repository/order_repository.dart';
+import '../../orders/model/order.dart';
 
-class CheckoutScreen extends StatelessWidget {
+class CheckoutScreen extends ConsumerWidget {
   const CheckoutScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    final user = authState.value;
+
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(
@@ -20,7 +27,7 @@ class CheckoutScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16).copyWith(bottom: 100),
             child: Column(
               children: [
-                _buildAddress(context),
+                _buildAddress(context, ref),
                 const SizedBox(height: 16),
                 _buildDeliveryTime(context),
                 const SizedBox(height: 16),
@@ -30,53 +37,63 @@ class CheckoutScreen extends StatelessWidget {
               ],
             ),
           ),
-          _buildBottomBar(context),
+          _buildBottomBar(context, ref),
         ],
       ),
     );
   }
 
-  Widget _buildAddress(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.surfaceContainerHighest)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildAddress(BuildContext context, WidgetRef ref) {
+    return FutureBuilder(
+      future: ref.read(authControllerProvider.notifier).getUserData(),
+      builder: (context, snapshot) {
+        final userData = snapshot.data;
+        final displayName = userData?.name ?? 'Budi Santoso';
+        final phone = userData?.phoneNumber != null && userData!.phoneNumber.isNotEmpty ? userData.phoneNumber : '+62 812-3456-7890';
+        final address = userData?.address != null && userData!.address.isNotEmpty ? userData.address : 'Jl. Merdeka No. 45, RT 01/RW 02, Kel. Sukamaju, Kec. Jatinegara, Jakarta Timur, 13310';
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.surfaceContainerHighest)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.location_on, color: AppTheme.primary),
-                  const SizedBox(width: 8),
-                  Text('Alamat Pengiriman', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 18)),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, color: AppTheme.primary),
+                      const SizedBox(width: 8),
+                      Text('Alamat Pengiriman', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 18)),
+                    ],
+                  ),
+                  Text('Ubah', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.primary)),
                 ],
               ),
-              Text('Ubah', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.primary)),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(left: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(displayName, style: Theme.of(context).textTheme.labelLarge),
+                    Text(phone, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
+                    const SizedBox(height: 4),
+                    Text(address, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: AppTheme.surfaceContainerLow, borderRadius: BorderRadius.circular(4), border: Border.all(color: AppTheme.outlineVariant)),
+                      child: Text('Rumah', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.only(left: 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Budi Santoso', style: Theme.of(context).textTheme.labelLarge),
-                Text('081234567890', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
-                const SizedBox(height: 4),
-                Text('Jl. Merdeka No. 45, RT 01/RW 02, Kel. Sukamaju, Kec. Jatinegara, Jakarta Timur, 13310', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: AppTheme.surfaceContainerLow, borderRadius: BorderRadius.circular(4), border: Border.all(color: AppTheme.outlineVariant)),
-                  child: Text('Rumah', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      }
     );
   }
 
@@ -232,7 +249,10 @@ class CheckoutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context) {
+  Widget _buildBottomBar(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authControllerProvider);
+    final user = authState.value;
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -253,7 +273,33 @@ class CheckoutScreen extends StatelessWidget {
               ],
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                if (user != null) {
+                  final userData = await ref.read(authControllerProvider.notifier).getUserData();
+
+                  final phone = userData?.phoneNumber != null && userData!.phoneNumber.isNotEmpty ? userData.phoneNumber : '+62 812-3456-7890';
+                  final address = userData?.address != null && userData!.address.isNotEmpty ? userData.address : 'Jl. Merdeka No. 45';
+                  final userName = userData?.name ?? user.displayName ?? 'User';
+
+                  final order = OrderModel(
+                    id: '',
+                    userId: user.uid,
+                    userName: userName,
+                    userPhone: phone,
+                    userAddress: address,
+                    status: 'Menunggu Konfirmasi',
+                    totalPrice: 192000,
+                    items: ['1x Ayam Broiler Utuh', '1x Dada Ayam Fillet'],
+                    createdAt: DateTime.now(),
+                  );
+                  await ref.read(orderRepositoryProvider).createOrder(order);
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pesanan berhasil dibuat!')));
+                    context.go('/orders');
+                  }
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: AppTheme.onPrimary,
