@@ -81,4 +81,4 @@ final class CurrentUserDataProvider extends $FunctionalProvider<
   }
 }
 
-String _$currentUserDataHash() => r'e090ff1806d58cadf901aa859d3373f62327a412';
+String _$currentUserDataHash() => r'1dbe38973a928e43455dbfbd1e820830574a2907';

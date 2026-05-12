@@ -33,7 +33,7 @@ class AuthRepository {
   Future<UserModel?> getUserData(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null) {
         return UserModel.fromFirestore(doc);
       }
       return null;
@@ -47,7 +47,8 @@ class AuthRepository {
         .collection('users')
         .doc(uid)
         .snapshots()
-        .map((doc) => doc.exists ? UserModel.fromFirestore(doc) : null);
+        .map((doc) => (doc.exists && doc.data() != null) ? UserModel.fromFirestore(doc) : null)
+        .handleError((_) => null);
   }
 
   Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {

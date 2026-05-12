@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../orders/repository/order_repository.dart';
@@ -235,53 +237,106 @@ class SellerDashboardScreen extends ConsumerWidget {
     final priceController = TextEditingController(text: product?.price.toString());
     final descController = TextEditingController(text: product?.description);
     final weightController = TextEditingController(text: product?.weight);
-    final imageController = TextEditingController(text: product?.imageUrl);
     final unitController = TextEditingController(text: product?.unit ?? '/pack');
     final categoryController = TextEditingController(text: product?.category ?? 'Ayam');
 
+    // Internal state for image
+    String imageUrl = product?.imageUrl ?? '';
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(product == null ? 'Tambah Produk' : 'Edit Produk'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
-              TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
-              TextField(controller: weightController, decoration: const InputDecoration(labelText: 'Berat (misal: 500g)')),
-              TextField(controller: unitController, decoration: const InputDecoration(labelText: 'Unit (misal: /pack)')),
-              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Kategori')),
-              TextField(controller: descController, decoration: const InputDecoration(labelText: 'Deskripsi')),
-              TextField(controller: imageController, decoration: const InputDecoration(labelText: 'URL Gambar')),
-            ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(product == null ? 'Tambah Produk' : 'Edit Produk'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    final picker = ImagePicker();
+                    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                    if (image != null) {
+                      // Show loading
+                      setState(() { imageUrl = 'loading'; });
+                      try {
+                        final url = await ref.read(productRepositoryProvider).uploadProductImage(File(image.path));
+                        setState(() { imageUrl = url; });
+                      } catch (e) {
+                        setState(() { imageUrl = ''; });
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Gagal upload gambar: $e')),
+                          );
+                        }
+                      }
+                    }
+                  },
+                  child: Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                      image: imageUrl.isNotEmpty && imageUrl != 'loading'
+                          ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: imageUrl == 'loading'
+                        ? const Center(child: CircularProgressIndicator())
+                        : imageUrl.isEmpty
+                            ? const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo, size: 40),
+                                  Text('Tambah Foto Produk'),
+                                ],
+                              )
+                            : null,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
+                TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
+                TextField(controller: weightController, decoration: const InputDecoration(labelText: 'Berat (misal: 500g)')),
+                TextField(controller: unitController, decoration: const InputDecoration(labelText: 'Unit (misal: /pack)')),
+                TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Kategori')),
+                TextField(controller: descController, decoration: const InputDecoration(labelText: 'Deskripsi')),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            ElevatedButton(
+              onPressed: imageUrl == 'loading' ? null : () {
+                if (nameController.text.isEmpty || priceController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Nama dan Harga harus diisi')),
+                  );
+                  return;
+                }
+                final newProduct = ProductModel(
+                  id: product?.id ?? '',
+                  name: nameController.text,
+                  price: double.tryParse(priceController.text) ?? 0,
+                  description: descController.text,
+                  weight: weightController.text,
+                  imageUrl: imageUrl,
+                  unit: unitController.text,
+                  category: categoryController.text,
+                  isAvailable: true,
+                );
+                if (product == null) {
+                  ref.read(productRepositoryProvider).addProduct(newProduct);
+                } else {
+                  ref.read(productRepositoryProvider).updateProduct(newProduct);
+                }
+                Navigator.pop(context);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () {
-              final newProduct = ProductModel(
-                id: product?.id ?? '',
-                name: nameController.text,
-                price: double.parse(priceController.text),
-                description: descController.text,
-                weight: weightController.text,
-                imageUrl: imageController.text,
-                unit: unitController.text,
-                category: categoryController.text,
-                isAvailable: true,
-              );
-              if (product == null) {
-                ref.read(productRepositoryProvider).addProduct(newProduct);
-              } else {
-                ref.read(productRepositoryProvider).updateProduct(newProduct);
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
       ),
     );
   }
