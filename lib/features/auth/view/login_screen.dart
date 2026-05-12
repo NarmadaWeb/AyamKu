@@ -19,15 +19,18 @@ class LoginScreen extends HookConsumerWidget {
 
     void submit() {
       if (formKey.currentState!.validate()) {
+        final email = emailController.text.trim();
+        final password = passwordController.text.trim();
+
         if (isLogin.value) {
           ref.read(authControllerProvider.notifier).signInWithEmailAndPassword(
-                emailController.text.trim(),
-                passwordController.text.trim(),
+                email,
+                password,
               );
         } else {
           ref.read(authControllerProvider.notifier).createUserWithEmailAndPassword(
-                emailController.text.trim(),
-                passwordController.text.trim(),
+                email,
+                password,
                 phoneController.text.trim(),
                 addressController.text.trim(),
               );
@@ -44,7 +47,7 @@ class LoginScreen extends HookConsumerWidget {
       }
       ref.read(authControllerProvider.notifier).resetPassword(emailController.text.trim());
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email reset password telah dikirim ke \${emailController.text}')),
+        SnackBar(content: Text('Email reset password telah dikirim ke ${emailController.text}')),
       );
     }
 
@@ -82,7 +85,6 @@ class LoginScreen extends HookConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: Container(
                 width: double.infinity,
-                height: 700,
                 constraints: const BoxConstraints(maxWidth: 450),
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(

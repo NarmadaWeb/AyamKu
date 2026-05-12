@@ -15,6 +15,11 @@ Stream<List<OrderModel>> userOrders(Ref ref) {
   return ref.watch(orderRepositoryProvider).getUserOrders();
 }
 
+@riverpod
+Stream<List<OrderModel>> allOrders(Ref ref) {
+  return ref.watch(orderRepositoryProvider).getAllOrders();
+}
+
 class OrderRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -35,7 +40,21 @@ class OrderRepository {
     });
   }
 
+  Stream<List<OrderModel>> getAllOrders() {
+    return _firestore
+        .collection('orders')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => OrderModel.fromFirestore(doc)).toList();
+    });
+  }
+
   Future<void> createOrder(OrderModel order) async {
     await _firestore.collection('orders').add(order.toFirestore());
+  }
+
+  Future<void> updateOrderStatus(String orderId, String status) async {
+    await _firestore.collection('orders').doc(orderId).update({'status': status});
   }
 }

@@ -6,10 +6,12 @@ class OrderModel {
   final String userName;
   final String userPhone;
   final String userAddress;
-  final String status;
+  final String status; // 'Menunggu Konfirmasi', 'Dalam Proses Packing', 'Dalam Pengiriman', 'Selesai', 'Dibatalkan'
   final double totalPrice;
   final List<dynamic> items;
   final DateTime createdAt;
+  final String deliveryTimeSlot;
+  final String paymentMethod;
 
   OrderModel({
     required this.id,
@@ -21,6 +23,8 @@ class OrderModel {
     required this.totalPrice,
     required this.items,
     required this.createdAt,
+    required this.deliveryTimeSlot,
+    required this.paymentMethod,
   });
 
   factory OrderModel.fromFirestore(DocumentSnapshot doc) {
@@ -35,6 +39,8 @@ class OrderModel {
       totalPrice: (data?['totalPrice'] ?? 0).toDouble(),
       items: data?['items'] ?? [],
       createdAt: (data?['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      deliveryTimeSlot: data?['deliveryTimeSlot'] ?? '',
+      paymentMethod: data?['paymentMethod'] ?? '',
     );
   }
 
@@ -48,6 +54,8 @@ class OrderModel {
       'totalPrice': totalPrice,
       'items': items,
       'createdAt': FieldValue.serverTimestamp(),
+      'deliveryTimeSlot': deliveryTimeSlot,
+      'paymentMethod': paymentMethod,
     };
   }
 }

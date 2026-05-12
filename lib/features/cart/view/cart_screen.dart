@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../repository/cart_repository.dart';
+import '../model/cart_item_model.dart';
+import 'package:intl/intl.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartItemsAsync = ref.watch(cartItemsProvider);
+    final currencyFormat = NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -15,69 +22,90 @@ class CartScreen extends StatelessWidget {
         leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
         actions: [IconButton(icon: const Icon(Icons.notifications), onPressed: () {})],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+      body: cartItemsAsync.when(
+        data: (items) {
+          if (items.isEmpty) {
+            return Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Keranjang Anda', style: Theme.of(context).textTheme.headlineMedium),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(color: AppTheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(100)),
-                        child: Text('2 Item', style: Theme.of(context).textTheme.labelSmall),
-                      ),
-                    ],
-                  ),
+                  const Icon(Icons.shopping_cart_outlined, size: 64, color: AppTheme.onSurfaceVariant),
                   const SizedBox(height: 16),
-                  _cartItem(
-                    context,
-                    'Ayam Broiler Utuh', '1.2 kg • Potong 8', '45.000', '1',
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuCrRXdLwMqI3qfJUg3Hbz840RXblEoV-LFemORN5LY7S-wX2AhLMJ3PZ-2ofq02wDg-uZfHo55DxS4iFD0xudw17crB3fWUxhLEXIS_NY8f33gh971sImPCwVohnrLSSvgFU8N7AhkV0Bifta4DcLRyfpgVkqNlUGSG_BLjXL4Nj_w20UYaENbRq1tCpVSrxZhT6yxJ8ZFnbQYaS7zNbM9Ceq4JW7GCLx4G_0FP7gzna9AQj7oKdCrOH-rtLVWBY6albGvFOTN-FQ'
-                  ),
-                  const SizedBox(height: 12),
-                  _cartItem(
-                    context,
-                    'Dada Ayam Fillet', '500g • Tanpa Kulit', '32.500', '2',
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuBxO6vtzyCwPcXkcVex6gBYe4fJhzFdetgxUMKkAH-_ZxnMeRIZfmWoeNizSHt6Iuj2ypI7AaMYh2IWbnlGcKAmVZPEISDLHvdB6RaQarvpBp0x1CmXFyOmY83jxw1BqnMy_ZlY8cFs-TDYV3y1OYnD8oKFOw9ieutARtfUvosXptj3Jck6_KZNJY1_CatUs_NfO443ydrT1OE6y86pJoBSCjaOkejElyqreui_quiWA60RJU9ZCQbaLjneTyj9tq2lheBDArn8Gg'
-                  ),
-                  const SizedBox(height: 24),
-                  _buildSummary(context),
-                  const SizedBox(height: 16),
+                  Text('Keranjang Anda Kosong', style: Theme.of(context).textTheme.headlineSmall),
+                  const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: () => context.push('/checkout'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: AppTheme.onPrimary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      minimumSize: const Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Lanjut ke Checkout', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward),
-                      ],
-                    ),
+                    onPressed: () => context.go('/catalog'),
+                    child: const Text('Belanja Sekarang'),
                   ),
                 ],
               ),
-            ),
-          ),
-          _buildBottomNav(context),
-        ],
+            );
+          }
+
+          final subtotal = items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+          final shipping = 15000.0;
+          final total = subtotal + shipping;
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Keranjang Anda', style: Theme.of(context).textTheme.headlineMedium),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(color: AppTheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(100)),
+                            child: Text('${items.length} Item', style: Theme.of(context).textTheme.labelSmall),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      ...items.map((item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _cartItem(context, item, ref, currencyFormat),
+                      )),
+                      const SizedBox(height: 24),
+                      _buildSummary(context, subtotal, shipping, total, currencyFormat),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.push('/checkout'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primary,
+                          foregroundColor: AppTheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          minimumSize: const Size(double.infinity, 56),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Lanjut ke Checkout', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              _buildBottomNav(context),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
-  Widget _cartItem(BuildContext context, String title, String subtitle, String price, String qty, String imgUrl) {
+  Widget _cartItem(BuildContext context, CartItemModel item, WidgetRef ref, NumberFormat currencyFormat) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -92,7 +120,7 @@ class CartScreen extends StatelessWidget {
             height: 100,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(image: NetworkImage(imgUrl), fit: BoxFit.cover),
+              image: DecorationImage(image: NetworkImage(item.imageUrl), fit: BoxFit.cover),
             ),
           ),
           const SizedBox(width: 12),
@@ -103,29 +131,40 @@ class CartScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16)),
-                    const Icon(Icons.close, color: AppTheme.onSurfaceVariant, size: 20),
+                    Expanded(child: Text(item.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppTheme.onSurfaceVariant, size: 20),
+                      onPressed: () => ref.read(cartRepositoryProvider).removeFromCart(item.id),
+                    ),
                   ],
                 ),
-                Text(subtitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
+                Text('${item.weight} • ${item.unit}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Rp $price', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.primary)),
+                    Text(currencyFormat.format(item.price), style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.primary)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       decoration: BoxDecoration(color: AppTheme.surfaceContainer, borderRadius: BorderRadius.circular(100)),
                       child: Row(
                         children: [
-                          const Icon(Icons.remove, size: 16, color: AppTheme.onSurfaceVariant),
+                          IconButton(
+                            icon: const Icon(Icons.remove, size: 16, color: AppTheme.onSurfaceVariant),
+                            onPressed: () => ref.read(cartRepositoryProvider).updateQuantity(item.id, item.quantity - 1),
+                            constraints: const BoxConstraints(),
+                            padding: const EdgeInsets.all(4),
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(qty, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
                           ),
-                          Container(
-                            decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
-                            child: const Icon(Icons.add, size: 16, color: AppTheme.onPrimary),
+                          GestureDetector(
+                            onTap: () => ref.read(cartRepositoryProvider).updateQuantity(item.id, item.quantity + 1),
+                            child: Container(
+                              decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+                              child: const Icon(Icons.add, size: 16, color: AppTheme.onPrimary),
+                            ),
                           ),
                         ],
                       ),
@@ -140,7 +179,7 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummary(BuildContext context) {
+  Widget _buildSummary(BuildContext context, double subtotal, double shipping, double total, NumberFormat currencyFormat) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -156,8 +195,8 @@ class CartScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total Harga (3 Barang)', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
-              Text('Rp 110.000', style: Theme.of(context).textTheme.labelLarge),
+              Text('Subtotal', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
+              Text(currencyFormat.format(subtotal), style: Theme.of(context).textTheme.labelLarge),
             ],
           ),
           const SizedBox(height: 8),
@@ -171,7 +210,7 @@ class CartScreen extends StatelessWidget {
                   Text('Estimasi Ongkos Kirim', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
                 ],
               ),
-              Text('Rp 15.000', style: Theme.of(context).textTheme.labelLarge),
+              Text(currencyFormat.format(shipping), style: Theme.of(context).textTheme.labelLarge),
             ],
           ),
           const Divider(height: 24),
@@ -179,7 +218,7 @@ class CartScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Total Tagihan', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 18)),
-              Text('Rp 125.000', style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 24, color: AppTheme.primary)),
+              Text(currencyFormat.format(total), style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 24, color: AppTheme.primary)),
             ],
           ),
         ],

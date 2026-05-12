@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter/services.dart';
 import '../model/user_model.dart';
 
 part 'auth_repository.g.dart';
@@ -45,7 +46,8 @@ class AuthRepository {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       if (credential.user != null) {
-        await _saveUserData(credential.user!, email: email, phoneNumber: phone, address: address);
+        final role = email == 'indra020204@gmail.com' ? 'seller' : 'user';
+        await _saveUserData(credential.user!, email: email, phoneNumber: phone, address: address, role: role);
       }
       return credential;
     } catch (e) {
@@ -56,7 +58,7 @@ class AuthRepository {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // The user canceled the sign-in
+      if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
@@ -69,25 +71,38 @@ class AuthRepository {
       if (userCredential.user != null) {
         final doc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
         if (!doc.exists) {
-          await _saveUserData(userCredential.user!, email: userCredential.user!.email ?? '', name: userCredential.user!.displayName);
+          final email = userCredential.user!.email ?? '';
+          final role = email == 'indra020204@gmail.com' ? 'seller' : 'user';
+          await _saveUserData(userCredential.user!, email: email, name: userCredential.user!.displayName, role: role);
         }
       }
       return userCredential;
+    } on PlatformException catch (e) {
+      if (e.code == '10') {
+        throw 'Sign-in failed. Please check your internet connection and make sure your Google account is properly configured on this device.';
+      }
+      rethrow;
     } catch (e) {
-      rethrow; // In test environments this might fail without proper google-services setup
+      rethrow;
     }
   }
 
-  Future<void> _saveUserData(User user, {required String email, String? name, String? phoneNumber, String? address}) async {
+  Future<void> _saveUserData(User user, {required String email, String? name, String? phoneNumber, String? address, String? role}) async {
     await _firestore.collection('users').doc(user.uid).set({
       'uid': user.uid,
       'email': email,
       'name': name ?? 'Budi Santoso',
-      'phoneNumber': phoneNumber ?? '+62',
+      'phoneNumber': phoneNumber ?? '',
       'address': address ?? '',
       'photoUrl': user.photoURL ?? '',
+      'role': role ?? 'user',
+      'paymentMethods': [],
       'createdAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  Future<void> updateUserData(String uid, Map<String, dynamic> data) async {
+    await _firestore.collection('users').doc(uid).update(data);
   }
 
   Future<void> sendPasswordResetEmail(String email) async {

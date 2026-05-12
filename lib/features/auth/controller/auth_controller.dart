@@ -12,14 +12,6 @@ class AuthController extends _$AuthController {
     return ref.watch(authRepositoryProvider).authStateChanges;
   }
 
-  Future<UserModel?> getUserData() async {
-    final user = state.value;
-    if (user != null) {
-      return ref.read(authRepositoryProvider).getUserData(user.uid);
-    }
-    return null;
-  }
-
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() =>
@@ -47,4 +39,11 @@ class AuthController extends _$AuthController {
     state = await AsyncValue.guard(() =>
         ref.read(authRepositoryProvider).signOut().then((_) => null));
   }
+}
+
+@riverpod
+Future<UserModel?> currentUserData(Ref ref) {
+  final user = ref.watch(authControllerProvider).value;
+  if (user == null) return Future.value(null);
+  return ref.watch(authRepositoryProvider).getUserData(user.uid);
 }
