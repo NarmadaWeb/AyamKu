@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../product/repository/product_repository.dart';
+import '../../product/model/product_model.dart';
+import '../../cart/repository/cart_repository.dart';
+import '../../cart/model/cart_item_model.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final productsAsync = ref.watch(productsProvider);
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -29,7 +35,11 @@ class HomeScreen extends ConsumerWidget {
           children: [
             _buildHeroBanner(context),
             _buildCategories(context),
-            _buildPopularProducts(context),
+            productsAsync.when(
+              data: (products) => _buildPopularProducts(context, products, ref),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e')),
+            ),
             _buildPromo(context),
             const SizedBox(height: 100), // padding for bottom nav
           ],
@@ -169,7 +179,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPopularProducts(BuildContext context) {
+  Widget _buildPopularProducts(BuildContext context, List<ProductModel> products, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -184,28 +194,29 @@ class HomeScreen extends ConsumerWidget {
               ),
             ],
           ),
-          GridView.count(
+          GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.75,
-            children: [
-              _productCard(context, 'Ayam Broiler Utuh Bersih', '~1.0 - 1.2 kg', '35.000', '/ekor', 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkXxiKL6lXK-8ycblvay20jB-dOJfU2P8sACxeyAW-YFirEfAhHCKN1eXDDTQpJjcfCmvlkq4aYb596RA98WvEoguQJOEh7J3LliKuoKgZv4Tya2M3_Y4rv8vmULReDWsMcNpca3P1M-7b8xTgEmYorLyJfafa116KRXUyLiV40BYCJ1LA_ldztab6HoGT8avNZes3pRabVkyIkVwaPjmeWDrDriUQu-I-ccN4Ztc0WP6CL3ecWwha7eXfa3lStHGUsja--zt9ZQ'),
-              _productCard(context, 'Dada Ayam Fillet', '500g', '28.000', '/pack', 'https://lh3.googleusercontent.com/aida-public/AB6AXuDngNE2qG-LriV4sihPp-1dw0cIzKXGzV-e9QgXCn955tk4Fe5f8lA_Kf1EFLyBMxGkLSvNHv1x2qdkhnhnAg7W36mSjC5iT2spOOk2oOiN97wumgeQD18Z_9SAeTaqI2REFlaakDQvAS7CkJR4wG7o1b9lQMTzJ1Qao0xGzkapIARC8xq1QyfQAXUxxckc_3Wq-AWO7kMOE3jp4tvDx2x7q04d426HzwGxE6qSCKOg0K-O8ydH9GLCEt88fOz4daB956wYhXBWIQ'),
-              _productCard(context, 'Paha Bawah (Drumstick)', '500g', '25.000', '/pack', 'https://lh3.googleusercontent.com/aida-public/AB6AXuAyfpUrj6p1w6vPjkUM6BC3j6pcDMmqo1bwyxsES01Wp1OkAL5ZFZDtS1mMeDJD-OHyXqf_mvGL47ZpGBq-kfTkvprzrS-WgSJbb9BNSLLsVLtEQaOCl7DfBIc9t8I0JwsfCJM9jXGss58bmytJ0otn_50FddfdBp_vDSr-Ah-yNQiQvVlFZ8a3RwfLHnalzpoky03_c7kbdJilqxShkFMjLgclnFV-KOS3DdZJB1YpOgQLJcXRp5wRIuHvTys3ikV3gi54O8l_oQ'),
-              _productCard(context, 'Telur Ayam Kampung Asli', '10 Butir', '22.000', '/pack', 'https://lh3.googleusercontent.com/aida-public/AB6AXuCOmgu_0kiqzwgt2TNYH6Nx9CqFj3jADx7V28zniQXMyNLLmwXbVX3Iqiwrde6ufUSRZWu-bDC4ZfBtL80cvb0O6geeZZLPO6AmTpYGP7H0jIQRG_6tzd3e9-sOTIv7b5M4ts-Xg90lCaqpKv2gLZR9ztCySGGbYfYAW83vmXMl4WJLXyGWbOYUlxUCcrbigJ21JdmzNsjrnC5ogpfapsgp6-vM1nfO1cnff4Ev3JMkHTqgeDT0i6UNi7kRElxKAESV7MEB5BHQTw'),
-            ],
+            itemCount: products.length > 4 ? 4 : products.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.75,
+            ),
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return _productCard(context, product, ref);
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _productCard(BuildContext context, String title, String weight, String price, String unit, String imageUrl) {
+  Widget _productCard(BuildContext context, ProductModel product, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => context.push('/product/1'), // Mock ID
+      onTap: () => context.push('/product/${product.id}'),
       child: Container(
         decoration: BoxDecoration(
           color: AppTheme.surfaceContainerLowest,
@@ -222,7 +233,7 @@ class HomeScreen extends ConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(imageUrl, fit: BoxFit.cover),
+                  Image.network(product.imageUrl, fit: BoxFit.cover),
                   Positioned(
                     top: 8,
                     right: 8,
@@ -256,9 +267,9 @@ class HomeScreen extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: Theme.of(context).textTheme.labelLarge, maxLines: 2, overflow: TextOverflow.ellipsis),
+                        Text(product.name, style: Theme.of(context).textTheme.labelLarge, maxLines: 2, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
-                        Text(weight, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
+                        Text(product.weight, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
                       ],
                     ),
                     Row(
@@ -267,10 +278,10 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         RichText(
                           text: TextSpan(
-                            text: 'Rp $price',
+                            text: 'Rp ${product.price.toInt()}',
                             style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.primary),
                             children: [
-                              TextSpan(text: unit, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
+                              TextSpan(text: product.unit, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
@@ -281,7 +292,21 @@ class HomeScreen extends ConsumerWidget {
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.add, color: AppTheme.onPrimary, size: 18),
-                            onPressed: () {},
+                            onPressed: () {
+                              ref.read(cartRepositoryProvider).addToCart(CartItemModel(
+                                id: '',
+                                productId: product.id,
+                                name: product.name,
+                                price: product.price,
+                                imageUrl: product.imageUrl,
+                                quantity: 1,
+                                unit: product.unit,
+                                weight: product.weight,
+                              ));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
+                              );
+                            },
                             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                             padding: EdgeInsets.zero,
                           ),

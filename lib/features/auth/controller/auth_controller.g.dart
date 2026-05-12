@@ -33,7 +33,7 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 }
 
-String _$authControllerHash() => r'740fa2d7a1f498ee1f179d4d761a3618e21f2fd1';
+String _$authControllerHash() => r'00e35db3faab2b6b4f60a1a45c386f2603c227b9';
 
 abstract class _$AuthController extends $StreamNotifier<User?> {
   Stream<User?> build();
@@ -49,3 +49,36 @@ abstract class _$AuthController extends $StreamNotifier<User?> {
     element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(currentUserData)
+final currentUserDataProvider = CurrentUserDataProvider._();
+
+final class CurrentUserDataProvider extends $FunctionalProvider<
+        AsyncValue<UserModel?>, UserModel?, FutureOr<UserModel?>>
+    with $FutureModifier<UserModel?>, $FutureProvider<UserModel?> {
+  CurrentUserDataProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'currentUserDataProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentUserDataHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<UserModel?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<UserModel?> create(Ref ref) {
+    return currentUserData(ref);
+  }
+}
+
+String _$currentUserDataHash() => r'5259dee04c2830c179950b395125e855587f0cd7';

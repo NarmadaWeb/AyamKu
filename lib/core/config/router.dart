@@ -25,6 +25,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 @riverpod
 GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authControllerProvider);
+  final userDataAsync = ref.watch(currentUserDataProvider);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -94,7 +95,14 @@ GoRouter appRouter(Ref ref) {
       final isLoggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/onboarding' || state.matchedLocation == '/splash';
 
       if (!isAuth && !isLoggingIn) return '/login';
-      if (isAuth && isLoggingIn) return '/';
+
+      if (isAuth && isLoggingIn) {
+        if (userDataAsync.isLoading) return null;
+        final userData = userDataAsync.value;
+        if (userData?.role == 'seller') return '/seller-dashboard';
+        return '/';
+      }
+
       return null;
     },
   );

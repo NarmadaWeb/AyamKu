@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../repository/product_repository.dart';
+import '../model/product_model.dart';
+import '../../cart/repository/cart_repository.dart';
+import '../../cart/model/cart_item_model.dart';
 
-class CatalogScreen extends StatelessWidget {
+class CatalogScreen extends ConsumerWidget {
   const CatalogScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productsAsync = ref.watch(productsProvider);
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
@@ -30,7 +37,13 @@ class CatalogScreen extends StatelessWidget {
         children: [
           _buildSearchBar(),
           _buildFilters(),
-          Expanded(child: _buildProductGrid(context)),
+          Expanded(
+            child: productsAsync.when(
+              data: (products) => _buildProductGrid(context, products, ref),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e')),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: _buildBottomNav(context),
@@ -111,25 +124,26 @@ class CatalogScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductGrid(BuildContext context) {
-    return GridView.count(
+  Widget _buildProductGrid(BuildContext context, List<ProductModel> products, WidgetRef ref) {
+    return GridView.builder(
       padding: const EdgeInsets.all(16),
-      crossAxisCount: 2,
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      childAspectRatio: 0.75,
-      children: [
-        _catalogCard(context, 'Dada Ayam Fillet Premium', '± 500g / pack', '35.000', 'https://lh3.googleusercontent.com/aida-public/AB6AXuAmk6V2PghG7fyBs2mbBgkEhUjIdYfO8leBL8SZ9cRgtob-NzGAt9sO1pxd6eg01-txu2PDt35E6hRSGHDeii_s0rxSed4k75GsIYlO2V0QTtnQVOoFHgvZYG1FK8TcliZF7InGcjRk3nnzAH5vpdZ_1ULDmQSgfiQZWVfKn8J-DyXhD9Z7CqSVdVtx4ddWSA_vesKo22hcvU4_N5ERjP2Mr07ENLeZWHWwzPdlXTPzXSoAMhiLmmdxbpeyA4QbGgJ7C2rgVvFx-Q'),
-        _catalogCard(context, 'Paha Bawah (Drumstick)', '± 1kg / pack', '45.000', 'https://lh3.googleusercontent.com/aida-public/AB6AXuBUFQBK4bkWN6xfO7bMjlpAb3LfWYk9VabszJIhbyH0sk5blRqMEhPxNkPuxHCkjawUjqYR_XtNgA3UlW4YAW7k7fJNUHAK3RIxL3q2txTFslzG_XebUgxSU4xA8IzZDfvmO6Ul3yxhI2KYOG6EVfWu0Uww_fuc43NFHEHZv5s-N-VsVsMzPX1kuNs-MwRwGA0_WON7DT-JNBHWMgqmhiBSbLs70fwPsYGojw8QlD3iwusqNK2Z2NYoHH4a4abDPesUeOUQ8LbRMg'),
-        _catalogCard(context, 'Sayap Ayam Utuh', '± 500g / pack', '28.000', 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgsnWOfhU3RZsYfTtPNxDP_yebKo0Mwz7TPfMgNNkj3xUsPWbB4qysVfkAKf5kCA6264qpJOw8ALXF7y-odyh16scvZVk8qW3SZW-2LW_m9sj5qL66-yqhSZqkgl5OTY_qob6PsKhz7MamKCoKSb5pvo4-9gjerTGd_1SCvql3YPf2vmzZbaudflpdKu9JEIDzuUnbnP1KHs_GWsZn03n0QS76vD4cWSLptzD_25ESyWLPTan35o-xkreJkrzTz7UdKbuBMy80iQ'),
-        _catalogCard(context, 'Ayam Pejantan Utuh', '1 Ekor (± 800g)', '42.000', 'https://lh3.googleusercontent.com/aida-public/AB6AXuDk9VzzNZ3lgmtim5Uw0BdQdU-q_-Q-PSmMG5pswCuP3EVgJ8RcpwZ-Dowmxaq7JZ2riHfiog5GUwMIOMs1WNDkGGpw0-9YKdG284NOXLwixTIgrkFf52rIn-cEvz68UU0rK0UKEAwWqLLUDeeKKPonHq_3S8n-0cDXBLM57yUmGPxoBHBzorLys166PcpQdtOflYW3IhiGXCgDry8WL00sr9SqIzhGTWInMBB1qhvOoE-firCkCEqIGU0wHYdXMZTX76g3fEvyKQ'),
-      ],
+      itemCount: products.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 0.75,
+      ),
+      itemBuilder: (context, index) {
+        final product = products[index];
+        return _catalogCard(context, product, ref);
+      },
     );
   }
 
-  Widget _catalogCard(BuildContext context, String title, String subtitle, String price, String imageUrl) {
+  Widget _catalogCard(BuildContext context, ProductModel product, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => context.push('/product/1'), // Mock ID
+      onTap: () => context.push('/product/${product.id}'),
       child: Container(
         decoration: BoxDecoration(
           color: AppTheme.surface,
@@ -146,7 +160,7 @@ class CatalogScreen extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(imageUrl, fit: BoxFit.cover),
+                  Image.network(product.imageUrl, fit: BoxFit.cover),
                   Positioned(
                     top: 0,
                     right: 0,
@@ -179,20 +193,37 @@ class CatalogScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: Theme.of(context).textTheme.labelLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(product.name, style: Theme.of(context).textTheme.labelLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 4),
-                        Text(subtitle, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
+                        Text(product.weight, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Rp $price', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.primary)),
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
-                          child: const Icon(Icons.add, color: AppTheme.onPrimary, size: 20),
+                        Text('Rp ${product.price.toInt()}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                        GestureDetector(
+                          onTap: () {
+                            ref.read(cartRepositoryProvider).addToCart(CartItemModel(
+                              id: '',
+                              productId: product.id,
+                              name: product.name,
+                              price: product.price,
+                              imageUrl: product.imageUrl,
+                              quantity: 1,
+                              unit: product.unit,
+                              weight: product.weight,
+                            ));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
+                            );
+                          },
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+                            child: const Icon(Icons.add, color: AppTheme.onPrimary, size: 20),
+                          ),
                         ),
                       ],
                     ),

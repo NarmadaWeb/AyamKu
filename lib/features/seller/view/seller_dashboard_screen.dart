@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../orders/repository/order_repository.dart';
+import '../../orders/model/order.dart';
+import '../../product/repository/product_repository.dart';
+import '../../product/model/product_model.dart';
+import 'package:intl/intl.dart';
 
-class SellerDashboardScreen extends StatelessWidget {
+class SellerDashboardScreen extends ConsumerWidget {
   const SellerDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allOrdersAsync = ref.watch(allOrdersProvider);
+    final productsAsync = ref.watch(productsProvider);
+    final currencyFormat = NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
+
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
-        title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        leading: IconButton(icon: const Icon(Icons.menu, color: AppTheme.primary), onPressed: () {}),
-        actions: [IconButton(icon: const Icon(Icons.notifications, color: AppTheme.primary), onPressed: () {})],
+        title: Text('AyamSegar Seller', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
+        actions: [
+          IconButton(icon: const Icon(Icons.notifications, color: AppTheme.primary), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.add_box, color: AppTheme.primary),
+            onPressed: () => _showAddProductDialog(context, ref),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16).copyWith(bottom: 100),
@@ -39,24 +54,59 @@ class SellerDashboardScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            _buildStatsGrid(context),
+            allOrdersAsync.when(
+              data: (orders) => _buildStatsGrid(context, orders),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e')),
+            ),
             const SizedBox(height: 24),
             Text('Pesanan Aktif', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 12),
-            _buildOrderCard(context, 'ORD-20231024-001', 'Budi Santoso', '10:30 WIB', 'Menunggu Konfirmasi', AppTheme.errorContainer, AppTheme.onErrorContainer, Icons.pending_actions, 'Ayam Broiler Utuh', '2 Ekor (Total ~2.4kg) • Potong 8', '76.000', 'https://lh3.googleusercontent.com/aida-public/AB6AXuA4F-m_2PY7tPb2g8y4zCSxpS1IQhO1FbEMPPU26R8BdZGIr5QinILwEoeLfJpkm6coB35ZS9_b5uf0K3RMGYxRciqJTFWxyNmLXifvSKr8-pBj4iDZwxku1Kyr1P0N5dOvCncShPHiwYiumRPIvJrwAJIzJJW4DUZNGRK9Hgh7Ni-9Dn2CUDEOpF27A8AImmMPJN5XzIKxE5U0ZfV4jJ7PN1LJy13XSkr_JLG4CRdR_41Q23DhBhQddaLaNKLJct2c9tpB8e7Kig', true),
-            const SizedBox(height: 12),
-            _buildOrderCard(context, 'ORD-20231024-002', 'Siti Aminah', '09:15 WIB', 'Perlu Dipotong', AppTheme.secondaryContainer, AppTheme.onSecondaryContainer, Icons.content_cut, 'Ayam Kampung', '1 Ekor (~0.9kg) • Potong 4', '65.000', null, false),
+            allOrdersAsync.when(
+              data: (orders) {
+                final activeOrders = orders.where((o) => o.status != 'Selesai' && o.status != 'Dibatalkan').toList();
+                if (activeOrders.isEmpty) return const Center(child: Text('Tidak ada pesanan aktif'));
+                return Column(
+                  children: activeOrders.map((order) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildOrderCard(context, order, ref, currencyFormat),
+                  )).toList(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e')),
+            ),
             const SizedBox(height: 24),
-            Text('Kelola Stok Cepat', style: Theme.of(context).textTheme.headlineSmall),
+            Text('Kelola Produk', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 12),
-            _buildStockManager(context),
+            productsAsync.when(
+              data: (products) => Column(
+                children: products.map((p) => ListTile(
+                  leading: Image.network(p.imageUrl, width: 40, height: 40, fit: BoxFit.cover),
+                  title: Text(p.name),
+                  subtitle: Text(currencyFormat.format(p.price)),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.edit, color: AppTheme.primary),
+                    onPressed: () => _showAddProductDialog(context, ref, product: p),
+                  ),
+                )).toList(),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e')),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatsGrid(BuildContext context) {
+  Widget _buildStatsGrid(BuildContext context, List<OrderModel> orders) {
+    final completedOrders = orders.where((o) => o.status == 'Selesai').toList();
+    final totalSales = completedOrders.fold(0.0, (sum, o) => sum + o.totalPrice);
+    final activeOrdersCount = orders.where((o) => o.status != 'Selesai' && o.status != 'Dibatalkan').length;
+
+    final currencyFormat = NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -65,8 +115,8 @@ class SellerDashboardScreen extends StatelessWidget {
       crossAxisSpacing: 12,
       childAspectRatio: 1.5,
       children: [
-        _statCard(context, 'Penjualan Hari Ini', 'Rp 1.25M', Icons.payments, AppTheme.primary, AppTheme.primaryContainer.withValues(alpha: 0.2)),
-        _statCard(context, 'Order Masuk', '12', Icons.receipt_long, AppTheme.secondary, AppTheme.secondaryContainer.withValues(alpha: 0.2)),
+        _statCard(context, 'Total Penjualan', currencyFormat.format(totalSales), Icons.payments, AppTheme.primary, AppTheme.primaryContainer.withValues(alpha: 0.2)),
+        _statCard(context, 'Order Aktif', activeOrdersCount.toString(), Icons.receipt_long, AppTheme.secondary, AppTheme.secondaryContainer.withValues(alpha: 0.2)),
       ],
     );
   }
@@ -91,102 +141,35 @@ class SellerDashboardScreen extends StatelessWidget {
               Expanded(child: Text(title, style: Theme.of(context).textTheme.labelSmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
-          Text(value, style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppTheme.onSurface)),
+          Text(value, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppTheme.onSurface, fontSize: 18)),
         ],
       ),
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, String id, String name, String time, String status, Color statusBg, Color statusColor, IconData statusIcon, String productTitle, String productDesc, String price, String? imgUrl, bool showAcceptReject) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.surfaceContainerHighest),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(id, style: Theme.of(context).textTheme.labelLarge),
-                  Text('$name • $time', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(100)),
-                child: Row(
-                  children: [
-                    Icon(statusIcon, size: 14, color: statusColor),
-                    const SizedBox(width: 4),
-                    Text(status, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: statusColor)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 24),
-          Row(
-            children: [
-              if (imgUrl != null) ...[
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), image: DecorationImage(image: NetworkImage(imgUrl), fit: BoxFit.cover)),
-                ),
-                const SizedBox(width: 16),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(productTitle, style: Theme.of(context).textTheme.labelLarge),
-                    Text(productDesc, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                    const SizedBox(height: 4),
-                    Text('Rp $price', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppTheme.primary, fontSize: 16)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (showAcceptReject)
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.check_circle),
-                    label: const Text('Terima Pesanan'),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: AppTheme.onPrimary),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton(onPressed: () {}, child: const Text('Tolak')),
-              ],
-            )
-          else
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Proses Pemotongan'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.surfaceContainerHighest, foregroundColor: AppTheme.onSurface),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildOrderCard(BuildContext context, OrderModel order, WidgetRef ref, NumberFormat currencyFormat) {
+    String nextStatusLabel = '';
+    String nextStatus = '';
+    Color statusColor = AppTheme.primary;
 
-  Widget _buildStockManager(BuildContext context) {
+    switch(order.status) {
+      case 'Menunggu Konfirmasi':
+        nextStatusLabel = 'Terima & Proses';
+        nextStatus = 'Dalam Proses Packing';
+        statusColor = AppTheme.error;
+        break;
+      case 'Dalam Proses Packing':
+        nextStatusLabel = 'Kirim Pesanan';
+        nextStatus = 'Dalam Pengiriman';
+        statusColor = AppTheme.secondary;
+        break;
+      case 'Dalam Pengiriman':
+        nextStatusLabel = 'Selesaikan';
+        nextStatus = 'Selesai';
+        statusColor = Colors.blue;
+        break;
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -198,36 +181,91 @@ class SellerDashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Jenis Ayam', style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 4),
-          DropdownButtonFormField<String>(
-            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12)),
-            initialValue: 'Ayam Broiler',
-            items: ['Ayam Broiler', 'Ayam Kampung', 'Ayam Pejantan'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-            onChanged: (v) {},
-          ),
-          const SizedBox(height: 16),
-          Text('Tambah Stok (Ekor)', style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 4),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(onPressed: () {}, icon: const Icon(Icons.remove)),
-              const Expanded(child: TextField(textAlign: TextAlign.center, decoration: InputDecoration(border: OutlineInputBorder()))),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.add, color: AppTheme.primary)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('ID: ${order.id.substring(0, 8)}', style: Theme.of(context).textTheme.labelLarge),
+                  Text(order.userName, style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(100)),
+                child: Text(order.status, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: statusColor)),
+              ),
             ],
           ),
+          const Divider(height: 24),
+          ...order.items.map((item) => Text('• $item')),
+          const SizedBox(height: 8),
+          Text('Total: ${currencyFormat.format(order.totalPrice)}', style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          Text('Harga per Ekor / Kg', style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 4),
-          const TextField(decoration: InputDecoration(prefixText: 'Rp ', border: OutlineInputBorder())),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: AppTheme.onPrimary, padding: const EdgeInsets.symmetric(vertical: 16)),
-              child: const Text('Perbarui Stok'),
+          if (nextStatus.isNotEmpty)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => ref.read(orderRepositoryProvider).updateOrderStatus(order.id, nextStatus),
+                child: Text(nextStatusLabel),
+              ),
             ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddProductDialog(BuildContext context, WidgetRef ref, {ProductModel? product}) {
+    final nameController = TextEditingController(text: product?.name);
+    final priceController = TextEditingController(text: product?.price.toString());
+    final descController = TextEditingController(text: product?.description);
+    final weightController = TextEditingController(text: product?.weight);
+    final imageController = TextEditingController(text: product?.imageUrl);
+    final unitController = TextEditingController(text: product?.unit ?? '/pack');
+    final categoryController = TextEditingController(text: product?.category ?? 'Ayam');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(product == null ? 'Tambah Produk' : 'Edit Produk'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
+              TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
+              TextField(controller: weightController, decoration: const InputDecoration(labelText: 'Berat (misal: 500g)')),
+              TextField(controller: unitController, decoration: const InputDecoration(labelText: 'Unit (misal: /pack)')),
+              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Kategori')),
+              TextField(controller: descController, decoration: const InputDecoration(labelText: 'Deskripsi')),
+              TextField(controller: imageController, decoration: const InputDecoration(labelText: 'URL Gambar')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () {
+              final newProduct = ProductModel(
+                id: product?.id ?? '',
+                name: nameController.text,
+                price: double.parse(priceController.text),
+                description: descController.text,
+                weight: weightController.text,
+                imageUrl: imageController.text,
+                unit: unitController.text,
+                category: categoryController.text,
+                isAvailable: true,
+              );
+              if (product == null) {
+                ref.read(productRepositoryProvider).addProduct(newProduct);
+              } else {
+                ref.read(productRepositoryProvider).updateProduct(newProduct);
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Simpan'),
           ),
         ],
       ),
