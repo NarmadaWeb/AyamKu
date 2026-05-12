@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,22 +8,19 @@ import '../model/product_model.dart';
 import '../../cart/repository/cart_repository.dart';
 import '../../cart/model/cart_item_model.dart';
 
-class CatalogScreen extends ConsumerWidget {
+class CatalogScreen extends HookConsumerWidget {
   const CatalogScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productsAsync = ref.watch(productsProvider);
+    final selectedFilter = useState('Filter');
 
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppTheme.primary),
-          onPressed: () {},
-        ),
         actions: [
           IconButton(
             icon: const Badge(
@@ -36,7 +34,7 @@ class CatalogScreen extends ConsumerWidget {
       body: Column(
         children: [
           _buildSearchBar(),
-          _buildFilters(),
+          _buildFilters(selectedFilter),
           Expanded(
             child: productsAsync.when(
               data: (products) => _buildProductGrid(context, products, ref),
@@ -77,49 +75,53 @@ class CatalogScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFilters() {
+  Widget _buildFilters(ValueNotifier<String> selectedFilter) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          _filterChip('Filter', Icons.tune, true),
+          _filterChip('Filter', Icons.tune, selectedFilter),
           const SizedBox(width: 8),
-          _filterChip('Berat', null, false),
+          _filterChip('Berat', null, selectedFilter),
           const SizedBox(width: 8),
-          _filterChip('Harga', null, false),
+          _filterChip('Harga', null, selectedFilter),
           const SizedBox(width: 8),
-          _filterChip('Jenis Ayam', null, false),
+          _filterChip('Jenis Ayam', null, selectedFilter),
           const SizedBox(width: 8),
-          _filterChip('Potongan', null, false),
+          _filterChip('Potongan', null, selectedFilter),
         ],
       ),
     );
   }
 
-  Widget _filterChip(String label, IconData? icon, bool isPrimary) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isPrimary ? AppTheme.primaryContainer : AppTheme.surface,
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: isPrimary ? AppTheme.primaryContainer : AppTheme.outlineVariant),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 18, color: isPrimary ? AppTheme.onPrimaryContainer : AppTheme.onSurfaceVariant),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: isPrimary ? AppTheme.onPrimaryContainer : AppTheme.onSurfaceVariant,
+  Widget _filterChip(String label, IconData? icon, ValueNotifier<String> selectedFilter) {
+    final isSelected = selectedFilter.value == label;
+    return GestureDetector(
+      onTap: () => selectedFilter.value = label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryContainer : AppTheme.surface,
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(color: isSelected ? AppTheme.primary : AppTheme.outlineVariant),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 18, color: isSelected ? AppTheme.onPrimaryContainer : AppTheme.onSurfaceVariant),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: isSelected ? AppTheme.onPrimaryContainer : AppTheme.onSurfaceVariant,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

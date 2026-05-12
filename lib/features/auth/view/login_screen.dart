@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../controller/auth_controller.dart';
@@ -12,10 +13,12 @@ class LoginScreen extends HookConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
+    final nameController = useTextEditingController();
     final phoneController = useTextEditingController();
     final addressController = useTextEditingController();
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final isLogin = useState(true);
+    final obscurePassword = useState(true);
 
     void submit() {
       if (formKey.currentState!.validate()) {
@@ -31,6 +34,7 @@ class LoginScreen extends HookConsumerWidget {
           ref.read(authControllerProvider.notifier).createUserWithEmailAndPassword(
                 email,
                 password,
+                nameController.text.trim(),
                 phoneController.text.trim(),
                 addressController.text.trim(),
               );
@@ -115,16 +119,30 @@ class LoginScreen extends HookConsumerWidget {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: passwordController,
-                        obscureText: true,
+                        obscureText: obscurePassword.value,
                         decoration: InputDecoration(
                           labelText: 'Password',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(obscurePassword.value ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () => obscurePassword.value = !obscurePassword.value,
+                          ),
                         ),
                         validator: (value) => value == null || value.isEmpty ? 'Password tidak boleh kosong' : null,
                       ),
 
                       if (!isLogin.value) ...[
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            labelText: 'Nama Lengkap',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            prefixIcon: const Icon(Icons.person_outline),
+                          ),
+                          validator: (value) => value == null || value.isEmpty ? 'Nama tidak boleh kosong' : null,
+                        ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: phoneController,
@@ -214,6 +232,20 @@ class LoginScreen extends HookConsumerWidget {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             side: const BorderSide(color: AppTheme.outlineVariant),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton.icon(
+                          onPressed: () => context.go('/seller-dashboard'),
+                          icon: const Icon(Icons.storefront, color: AppTheme.secondary),
+                          label: const Text('Masuk Sebagai Seller'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.secondary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                         ),
                       ),

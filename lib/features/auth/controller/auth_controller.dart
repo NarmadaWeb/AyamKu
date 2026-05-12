@@ -18,10 +18,10 @@ class AuthController extends _$AuthController {
         ref.read(authRepositoryProvider).signInWithEmailAndPassword(email, password).then((_) => ref.read(authRepositoryProvider).currentUser));
   }
 
-  Future<void> createUserWithEmailAndPassword(String email, String password, String phone, String address) async {
+  Future<void> createUserWithEmailAndPassword(String email, String password, String name, String phone, String address) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() =>
-        ref.read(authRepositoryProvider).createUserWithEmailAndPassword(email, password, phone, address).then((_) => ref.read(authRepositoryProvider).currentUser));
+        ref.read(authRepositoryProvider).createUserWithEmailAndPassword(email, password, name, phone, address).then((_) => ref.read(authRepositoryProvider).currentUser));
   }
 
   Future<void> signInWithGoogle() async {

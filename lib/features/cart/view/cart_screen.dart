@@ -19,7 +19,6 @@ class CartScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
         actions: [IconButton(icon: const Icon(Icons.notifications), onPressed: () {})],
       ),
       body: cartItemsAsync.when(

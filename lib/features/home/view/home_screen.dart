@@ -40,7 +40,6 @@ class HomeScreen extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, s) => Center(child: Text('Error: $e')),
             ),
-            _buildPromo(context),
             const SizedBox(height: 100), // padding for bottom nav
           ],
         ),
