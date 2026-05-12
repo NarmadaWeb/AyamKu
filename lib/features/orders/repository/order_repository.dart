@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/order.dart';
+import '../../home/model/notification_model.dart';
 
 part 'order_repository.g.dart';
 
@@ -56,5 +57,20 @@ class OrderRepository {
 
   Future<void> updateOrderStatus(String orderId, String status) async {
     await _firestore.collection('orders').doc(orderId).update({'status': status});
+
+    // Create notification for the user
+    final orderDoc = await _firestore.collection('orders').doc(orderId).get();
+    final order = OrderModel.fromFirestore(orderDoc);
+
+    await _firestore.collection('notifications').add(NotificationModel(
+      id: '',
+      userId: order.userId,
+      title: 'Update Pesanan',
+      body: 'Status pesanan ${order.id.substring(0, 8)} Anda sekarang: $status',
+      createdAt: DateTime.now(),
+      isRead: false,
+      type: 'order_status',
+      relatedId: order.id,
+    ).toFirestore());
   }
 }

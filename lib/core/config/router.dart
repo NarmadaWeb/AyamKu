@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/view/login_screen.dart';
+import '../../features/auth/view/seller_login_screen.dart';
 import '../../features/home/view/home_screen.dart';
 import '../../features/home/view/splash_screen.dart';
 import '../../features/home/view/onboarding_screen.dart';
@@ -16,6 +17,7 @@ import '../../features/seller/view/seller_dashboard_screen.dart';
 import '../../features/loyalty/view/loyalty_screen.dart';
 import '../../features/help/view/help_center_screen.dart';
 import '../../features/recipes/view/recipes_screen.dart';
+import '../../features/home/view/notification_screen.dart';
 import '../../features/auth/controller/auth_controller.dart';
 
 part 'router.g.dart';
@@ -42,6 +44,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/login-seller',
+        builder: (context, state) => const SellerLoginScreen(),
       ),
       GoRoute(
         path: '/',
@@ -87,12 +93,16 @@ GoRouter appRouter(Ref ref) {
         path: '/recipes',
         builder: (context, state) => const RecipesScreen(),
       ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationScreen(),
+      ),
     ],
     redirect: (context, state) {
       if (authState.isLoading || authState.hasError) return null;
 
       final isAuth = authState.value != null;
-      final isLoggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/onboarding' || state.matchedLocation == '/splash';
+      final isLoggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/login-seller' || state.matchedLocation == '/onboarding' || state.matchedLocation == '/splash';
 
       if (!isAuth && !isLoggingIn) return '/login';
 

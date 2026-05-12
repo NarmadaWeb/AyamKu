@@ -54,8 +54,8 @@ abstract class _$AuthController extends $StreamNotifier<User?> {
 final currentUserDataProvider = CurrentUserDataProvider._();
 
 final class CurrentUserDataProvider extends $FunctionalProvider<
-        AsyncValue<UserModel?>, UserModel?, FutureOr<UserModel?>>
-    with $FutureModifier<UserModel?>, $FutureProvider<UserModel?> {
+        AsyncValue<UserModel?>, UserModel?, Stream<UserModel?>>
+    with $FutureModifier<UserModel?>, $StreamProvider<UserModel?> {
   CurrentUserDataProvider._()
       : super(
           from: null,
@@ -72,13 +72,13 @@ final class CurrentUserDataProvider extends $FunctionalProvider<
 
   @$internal
   @override
-  $FutureProviderElement<UserModel?> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+  $StreamProviderElement<UserModel?> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
 
   @override
-  FutureOr<UserModel?> create(Ref ref) {
+  Stream<UserModel?> create(Ref ref) {
     return currentUserData(ref);
   }
 }
 
-String _$currentUserDataHash() => r'5259dee04c2830c179950b395125e855587f0cd7';
+String _$currentUserDataHash() => r'e090ff1806d58cadf901aa859d3373f62327a412';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../home/repository/notification_repository.dart';
 import '../../orders/repository/order_repository.dart';
 import '../../orders/model/order.dart';
 import '../../product/repository/product_repository.dart';
@@ -23,7 +24,20 @@ class SellerDashboardScreen extends ConsumerWidget {
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar Seller', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications, color: AppTheme.primary), onPressed: () {}),
+          IconButton(
+            icon: ref.watch(unreadNotificationsCountProvider).when(
+              data: (count) => count > 0
+                ? Badge(
+                    label: Text(count.toString()),
+                    backgroundColor: AppTheme.primary,
+                    child: const Icon(Icons.notifications, color: AppTheme.primary),
+                  )
+                : const Icon(Icons.notifications, color: AppTheme.primary),
+              loading: () => const Icon(Icons.notifications, color: AppTheme.primary),
+              error: (_, __) => const Icon(Icons.notifications, color: AppTheme.primary),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
           IconButton(
             icon: const Icon(Icons.add_box, color: AppTheme.primary),
             onPressed: () => _showAddProductDialog(context, ref),

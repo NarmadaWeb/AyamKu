@@ -42,6 +42,14 @@ class AuthRepository {
     }
   }
 
+  Stream<UserModel?> watchUserData(String uid) {
+    return _firestore
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.exists ? UserModel.fromFirestore(doc) : null);
+  }
+
   Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(email: email, password: password);

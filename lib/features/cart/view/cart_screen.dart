@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../repository/cart_repository.dart';
 import '../model/cart_item_model.dart';
@@ -19,7 +20,22 @@ class CartScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        actions: [IconButton(icon: const Icon(Icons.notifications), onPressed: () {})],
+        actions: [
+          IconButton(
+            icon: ref.watch(unreadNotificationsCountProvider).when(
+              data: (count) => count > 0
+                ? Badge(
+                    label: Text(count.toString()),
+                    backgroundColor: AppTheme.primary,
+                    child: const Icon(Icons.notifications),
+                  )
+                : const Icon(Icons.notifications),
+              loading: () => const Icon(Icons.notifications),
+              error: (_, __) => const Icon(Icons.notifications),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
       ),
       body: cartItemsAsync.when(
         data: (items) {
