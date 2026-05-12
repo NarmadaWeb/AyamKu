@@ -102,15 +102,27 @@ GoRouter appRouter(Ref ref) {
       if (authState.isLoading || authState.hasError) return null;
 
       final isAuth = authState.value != null;
-      final isLoggingIn = state.matchedLocation == '/login' || state.matchedLocation == '/login-seller' || state.matchedLocation == '/onboarding' || state.matchedLocation == '/splash';
+      final isLoggingIn = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/login-seller' ||
+          state.matchedLocation == '/onboarding' ||
+          state.matchedLocation == '/splash';
 
       if (!isAuth && !isLoggingIn) return '/login';
 
-      if (isAuth && isLoggingIn) {
+      if (isAuth) {
+        // Wait for userDataAsync to load before deciding where to go from login screens
         if (userDataAsync.isLoading) return null;
+
         final userData = userDataAsync.value;
-        if (userData?.role == 'seller') return '/seller-dashboard';
-        return '/';
+        final isSeller = userData?.role == 'seller';
+
+        if (isLoggingIn) {
+          return isSeller ? '/seller-dashboard' : '/';
+        }
+
+        // Optional: prevent regular users from accessing seller dashboard and vice-versa
+        if (state.matchedLocation == '/seller-dashboard' && !isSeller) return '/';
+        if (state.matchedLocation == '/' && isSeller) return '/seller-dashboard';
       }
 
       return null;

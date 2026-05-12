@@ -52,7 +52,19 @@ class AuthRepository {
 
   Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      if (credential.user != null) {
+        // Ensure indra020204@gmail.com is always a seller
+        if (email == 'indra020204@gmail.com') {
+          final doc = await _firestore.collection('users').doc(credential.user!.uid).get();
+          if (doc.exists && doc.data()?['role'] != 'seller') {
+            await updateUserData(credential.user!.uid, {'role': 'seller'});
+          } else if (!doc.exists) {
+            await _saveUserData(credential.user!, email: email, role: 'seller');
+          }
+        }
+      }
+      return credential;
     } catch (e) {
       rethrow;
     }
@@ -86,10 +98,13 @@ class AuthRepository {
 
       if (userCredential.user != null) {
         final doc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+        final email = userCredential.user!.email ?? '';
+        final role = email == 'indra020204@gmail.com' ? 'seller' : 'user';
+
         if (!doc.exists) {
-          final email = userCredential.user!.email ?? '';
-          final role = email == 'indra020204@gmail.com' ? 'seller' : 'user';
           await _saveUserData(userCredential.user!, email: email, name: userCredential.user!.displayName, role: role);
+        } else if (email == 'indra020204@gmail.com' && doc.data()?['role'] != 'seller') {
+          await updateUserData(userCredential.user!.uid, {'role': 'seller'});
         }
       }
       return userCredential;

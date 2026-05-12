@@ -10,6 +10,24 @@ class LoginScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next is AsyncError) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Login Gagal'),
+            content: Text(next.error.toString()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    });
+
     final authState = ref.watch(authControllerProvider);
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
@@ -177,15 +195,6 @@ class LoginScreen extends HookConsumerWidget {
 
                       const SizedBox(height: 16),
 
-                      if (authState.hasError)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Text(
-                            authState.error.toString(),
-                            style: const TextStyle(color: AppTheme.error),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
 
                       SizedBox(
                         width: double.infinity,

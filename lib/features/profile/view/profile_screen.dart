@@ -176,16 +176,23 @@ class ProfileScreen extends HookConsumerWidget {
   }
 
   Future<void> _uploadImage(BuildContext context, WidgetRef ref, String uid, File file) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
     try {
       final url = await ref.read(authRepositoryProvider).uploadProfileImage(uid, file);
       await ref.read(authRepositoryProvider).updateUserData(uid, {'photoUrl': url});
       if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Foto profil berhasil diperbarui'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal mengunggah foto: $e'), backgroundColor: AppTheme.error),
         );
