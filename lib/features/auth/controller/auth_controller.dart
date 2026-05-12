@@ -43,7 +43,13 @@ class AuthController extends _$AuthController {
 
 @riverpod
 Stream<UserModel?> currentUserData(Ref ref) {
-  final user = ref.watch(authControllerProvider).value;
-  if (user == null) return Stream.value(null);
-  return ref.watch(authRepositoryProvider).watchUserData(user.uid);
+  final userAsync = ref.watch(authControllerProvider);
+  return userAsync.when(
+    data: (user) {
+      if (user == null) return Stream.value(null);
+      return ref.watch(authRepositoryProvider).watchUserData(user.uid);
+    },
+    loading: () => const Stream.empty(),
+    error: (err, stack) => Stream.error(err, stack),
+  );
 }

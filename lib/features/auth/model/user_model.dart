@@ -25,13 +25,15 @@ class UserModel {
     final data = doc.data() as Map<String, dynamic>?;
     return UserModel(
       uid: doc.id,
-      email: data?['email'] ?? '',
-      name: data?['name'] ?? 'User',
-      phoneNumber: data?['phoneNumber'] ?? '',
-      address: data?['address'] ?? '',
-      photoUrl: data?['photoUrl'] ?? '',
-      role: data?['role'] ?? 'user',
-      paymentMethods: List<String>.from(data?['paymentMethods'] ?? []),
+      email: data?['email']?.toString() ?? '',
+      name: data?['name']?.toString() ?? 'User',
+      phoneNumber: data?['phoneNumber']?.toString() ?? '',
+      address: data?['address']?.toString() ?? '',
+      photoUrl: data?['photoUrl']?.toString() ?? '',
+      role: data?['role']?.toString() ?? 'user',
+      paymentMethods: data?['paymentMethods'] is List
+          ? List<String>.from((data!['paymentMethods'] as List).map((e) => e.toString()))
+          : [],
     );
   }
 
