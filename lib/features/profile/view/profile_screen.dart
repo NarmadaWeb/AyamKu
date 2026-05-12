@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/repository/auth_repository.dart';
@@ -18,7 +20,6 @@ class ProfileScreen extends HookConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
         actions: [IconButton(icon: const Icon(Icons.notifications), onPressed: () {})],
       ),
       body: userDataAsync.when(
@@ -121,27 +122,51 @@ class ProfileScreen extends HookConsumerWidget {
   }
 
   void _showEditPhotoDialog(BuildContext context, UserModel? userData, WidgetRef ref) {
-    final photoController = TextEditingController(text: userData?.photoUrl);
-    showDialog(
+    if (userData == null) return;
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Update Foto Profil'),
-        content: TextField(controller: photoController, decoration: const InputDecoration(labelText: 'URL Foto')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () async {
-              if (userData != null) {
-                await ref.read(authRepositoryProvider).updateUserData(userData.uid, {'photoUrl': photoController.text});
-                if (context.mounted) Navigator.pop(context);
-                ref.invalidate(currentUserDataProvider);
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Pilih dari Galeri'),
+              onTap: () async {
+                Navigator.pop(context);
+                final picker = ImagePicker();
+                final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                if (image != null) {
+                  _uploadImage(ref, userData.uid, File(image.path));
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Ambil Foto'),
+              onTap: () async {
+                Navigator.pop(context);
+                final picker = ImagePicker();
+                final image = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                if (image != null) {
+                  _uploadImage(ref, userData.uid, File(image.path));
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _uploadImage(WidgetRef ref, String uid, File file) async {
+    try {
+      final url = await ref.read(authRepositoryProvider).uploadProfileImage(uid, file);
+      await ref.read(authRepositoryProvider).updateUserData(uid, {'photoUrl': url});
+      ref.invalidate(currentUserDataProvider);
+    } catch (e) {
+      // Handle error (e.g. show SnackBar)
+    }
   }
 
   void _showEditProfileDialog(BuildContext context, UserModel? userData, WidgetRef ref) {
@@ -197,7 +222,7 @@ class ProfileScreen extends HookConsumerWidget {
           const Divider(height: 1, indent: 48),
           _settingsLink(context, Icons.payments, 'Metode Pembayaran', () => _showPaymentMethodsDialog(context, userData, ref)),
           const Divider(height: 1, indent: 48),
-          _settingsLink(context, Icons.help_outline, 'Bantuan', () {}),
+          _settingsLink(context, Icons.help_outline, 'Bantuan', () => context.push('/help')),
         ],
       ),
     );

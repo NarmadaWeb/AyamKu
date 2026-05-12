@@ -193,7 +193,10 @@ class CheckoutScreen extends HookConsumerWidget {
   Widget _paymentOption(BuildContext context, String title, IconData icon, ValueNotifier<String> selectedPaymentMethod, {String? subtitle}) {
     final isSelected = selectedPaymentMethod.value == title;
     return GestureDetector(
-      onTap: () => selectedPaymentMethod.value = title,
+      onTap: () {
+        selectedPaymentMethod.value = title;
+      },
+      behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -204,23 +207,29 @@ class CheckoutScreen extends HookConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Icon(icon, color: AppTheme.primary),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.labelLarge),
-                    if (subtitle != null) Text(subtitle, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                  ],
-                ),
-              ],
+            Expanded(
+              child: Row(
+                children: [
+                  Icon(icon, color: AppTheme.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: Theme.of(context).textTheme.labelLarge),
+                        if (subtitle != null) Text(subtitle, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             Radio<String>(
               value: title,
               groupValue: selectedPaymentMethod.value,
-              onChanged: (v) => selectedPaymentMethod.value = v!,
+              onChanged: (v) {
+                if (v != null) selectedPaymentMethod.value = v;
+              },
               activeColor: AppTheme.primary,
             ),
           ],

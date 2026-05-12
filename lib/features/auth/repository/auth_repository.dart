@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/services.dart';
@@ -9,15 +11,21 @@ part 'auth_repository.g.dart';
 
 @riverpod
 AuthRepository authRepository(Ref ref) {
-  return AuthRepository(FirebaseAuth.instance, FirebaseFirestore.instance, GoogleSignIn());
+  return AuthRepository(
+    FirebaseAuth.instance,
+    FirebaseFirestore.instance,
+    GoogleSignIn(),
+    FirebaseStorage.instance,
+  );
 }
 
 class AuthRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
+  final FirebaseStorage _storage;
 
-  AuthRepository(this._auth, this._firestore, this._googleSignIn);
+  AuthRepository(this._auth, this._firestore, this._googleSignIn, this._storage);
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -42,12 +50,12 @@ class AuthRepository {
     }
   }
 
-  Future<UserCredential?> createUserWithEmailAndPassword(String email, String password, String phone, String address) async {
+  Future<UserCredential?> createUserWithEmailAndPassword(String email, String password, String name, String phone, String address) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       if (credential.user != null) {
         final role = email == 'indra020204@gmail.com' ? 'seller' : 'user';
-        await _saveUserData(credential.user!, email: email, phoneNumber: phone, address: address, role: role);
+        await _saveUserData(credential.user!, email: email, name: name, phoneNumber: phone, address: address, role: role);
       }
       return credential;
     } catch (e) {
@@ -103,6 +111,16 @@ class AuthRepository {
 
   Future<void> updateUserData(String uid, Map<String, dynamic> data) async {
     await _firestore.collection('users').doc(uid).update(data);
+  }
+
+  Future<String> uploadProfileImage(String uid, File file) async {
+    try {
+      final ref = _storage.ref().child('profile_images').child('$uid.jpg');
+      await ref.putFile(file);
+      return await ref.getDownloadURL();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
