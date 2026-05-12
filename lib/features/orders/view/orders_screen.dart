@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../repository/order_repository.dart';
 import '../model/order.dart';
@@ -18,7 +19,22 @@ class OrdersScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        actions: [IconButton(icon: const Icon(Icons.notifications, color: AppTheme.primary), onPressed: () {})],
+        actions: [
+          IconButton(
+            icon: ref.watch(unreadNotificationsCountProvider).when(
+              data: (count) => count > 0
+                ? Badge(
+                    label: Text(count.toString()),
+                    backgroundColor: AppTheme.primary,
+                    child: const Icon(Icons.notifications, color: AppTheme.primary),
+                  )
+                : const Icon(Icons.notifications, color: AppTheme.primary),
+              loading: () => const Icon(Icons.notifications, color: AppTheme.primary),
+              error: (_, __) => const Icon(Icons.notifications, color: AppTheme.primary),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
       ),
       body: ordersState.when(
         data: (orders) {

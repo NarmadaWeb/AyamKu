@@ -42,8 +42,8 @@ class AuthController extends _$AuthController {
 }
 
 @riverpod
-Future<UserModel?> currentUserData(Ref ref) {
+Stream<UserModel?> currentUserData(Ref ref) {
   final user = ref.watch(authControllerProvider).value;
-  if (user == null) return Future.value(null);
-  return ref.watch(authRepositoryProvider).getUserData(user.uid);
+  if (user == null) return Stream.value(null);
+  return ref.watch(authRepositoryProvider).watchUserData(user.uid);
 }

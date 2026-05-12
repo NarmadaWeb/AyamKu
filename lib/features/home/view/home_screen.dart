@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../repository/notification_repository.dart';
 import '../../product/repository/product_repository.dart';
 import '../../product/model/product_model.dart';
 import '../../cart/repository/cart_repository.dart';
@@ -22,11 +23,18 @@ class HomeScreen extends ConsumerWidget {
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
         actions: [
           IconButton(
-            icon: const Badge(
-              backgroundColor: AppTheme.primary,
-              child: Icon(Icons.notifications, color: AppTheme.onSurfaceVariant),
+            icon: ref.watch(unreadNotificationsCountProvider).when(
+              data: (count) => count > 0
+                ? Badge(
+                    label: Text(count.toString()),
+                    backgroundColor: AppTheme.primary,
+                    child: const Icon(Icons.notifications, color: AppTheme.onSurfaceVariant),
+                  )
+                : const Icon(Icons.notifications, color: AppTheme.onSurfaceVariant),
+              loading: () => const Icon(Icons.notifications, color: AppTheme.onSurfaceVariant),
+              error: (_, __) => const Icon(Icons.notifications, color: AppTheme.onSurfaceVariant),
             ),
-            onPressed: () {},
+            onPressed: () => context.push('/notifications'),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/repository/auth_repository.dart';
@@ -20,7 +21,22 @@ class ProfileScreen extends HookConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         title: Text('AyamSegar', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary, fontSize: 24)),
-        actions: [IconButton(icon: const Icon(Icons.notifications), onPressed: () {})],
+        actions: [
+          IconButton(
+            icon: ref.watch(unreadNotificationsCountProvider).when(
+              data: (count) => count > 0
+                ? Badge(
+                    label: Text(count.toString()),
+                    backgroundColor: AppTheme.primary,
+                    child: const Icon(Icons.notifications),
+                  )
+                : const Icon(Icons.notifications),
+              loading: () => const Icon(Icons.notifications),
+              error: (_, __) => const Icon(Icons.notifications),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
       ),
       body: userDataAsync.when(
         data: (userData) => Column(
@@ -137,7 +153,7 @@ class ProfileScreen extends HookConsumerWidget {
                 final picker = ImagePicker();
                 final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
                 if (image != null) {
-                  _uploadImage(ref, userData.uid, File(image.path));
+                  _uploadImage(context, ref, userData.uid, File(image.path));
                 }
               },
             ),
@@ -149,7 +165,7 @@ class ProfileScreen extends HookConsumerWidget {
                 final picker = ImagePicker();
                 final image = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
                 if (image != null) {
-                  _uploadImage(ref, userData.uid, File(image.path));
+                  _uploadImage(context, ref, userData.uid, File(image.path));
                 }
               },
             ),
@@ -159,13 +175,21 @@ class ProfileScreen extends HookConsumerWidget {
     );
   }
 
-  Future<void> _uploadImage(WidgetRef ref, String uid, File file) async {
+  Future<void> _uploadImage(BuildContext context, WidgetRef ref, String uid, File file) async {
     try {
       final url = await ref.read(authRepositoryProvider).uploadProfileImage(uid, file);
       await ref.read(authRepositoryProvider).updateUserData(uid, {'photoUrl': url});
-      ref.invalidate(currentUserDataProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Foto profil berhasil diperbarui'), backgroundColor: Colors.green),
+        );
+      }
     } catch (e) {
-      // Handle error (e.g. show SnackBar)
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengunggah foto: $e'), backgroundColor: AppTheme.error),
+        );
+      }
     }
   }
 
@@ -193,13 +217,25 @@ class ProfileScreen extends HookConsumerWidget {
           ElevatedButton(
             onPressed: () async {
               if (userData != null) {
-                await ref.read(authRepositoryProvider).updateUserData(userData.uid, {
-                  'name': nameController.text,
-                  'phoneNumber': phoneController.text,
-                  'address': addressController.text,
-                });
-                if (context.mounted) Navigator.pop(context);
-                ref.invalidate(currentUserDataProvider);
+                try {
+                  await ref.read(authRepositoryProvider).updateUserData(userData.uid, {
+                    'name': nameController.text,
+                    'phoneNumber': phoneController.text,
+                    'address': addressController.text,
+                  });
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Profil berhasil diperbarui'), backgroundColor: Colors.green),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Gagal memperbarui profil: $e'), backgroundColor: AppTheme.error),
+                    );
+                  }
+                }
               }
             },
             child: const Text('Simpan'),
@@ -247,14 +283,26 @@ class ProfileScreen extends HookConsumerWidget {
                 value: userData?.paymentMethods.contains(method) ?? false,
                 onChanged: (val) async {
                   if (userData != null) {
-                    final current = List<String>.from(userData.paymentMethods);
-                    if (val == true) {
-                      current.add(method);
-                    } else {
-                      current.remove(method);
+                    try {
+                      final current = List<String>.from(userData.paymentMethods);
+                      if (val == true) {
+                        current.add(method);
+                      } else {
+                        current.remove(method);
+                      }
+                      await ref.read(authRepositoryProvider).updateUserData(userData.uid, {'paymentMethods': current});
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Metode pembayaran $method ${val == true ? 'ditambahkan' : 'dihapus'}'), backgroundColor: Colors.green),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Gagal memperbarui metode pembayaran: $e'), backgroundColor: AppTheme.error),
+                        );
+                      }
                     }
-                    await ref.read(authRepositoryProvider).updateUserData(userData.uid, {'paymentMethods': current});
-                    ref.invalidate(currentUserDataProvider);
                   }
                 },
               ),

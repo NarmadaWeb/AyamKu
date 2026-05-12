@@ -209,38 +209,11 @@ class LoginScreen extends HookConsumerWidget {
                         child: Text(isLogin.value ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'),
                       ),
 
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          const Expanded(child: Divider()),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('ATAU', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                          ),
-                          const Expanded(child: Divider()),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: authState.isLoading ? null : () => ref.read(authControllerProvider.notifier).signInWithGoogle(),
-                          icon: Image.network('https://lh3.googleusercontent.com/aida-public/AB6AXuBnRNiJ3wrQSKeVYTbvTdW4CiYtwddISkExU2XJTXQRFWodhXf3vHNPHSZPtS6UB_HGuvzSloBH9cDcoB21zQJoiYHqdaibcrriZJhlceyQnJBFiVg4gtkQkTgNc1QJPLWueCLN7rpCa63tNCkgRRbV9ym2LYPzygoD3oz46oLY50yrGr_K4GCjWD1jAjvtX4f5Z5V5wPFhi34oeIAPG7oW5nptNq6CCsA0Jf2SM94MkaagFpdWA_gxkqsmsrCB_JsUnfBG5H5Qhg', width: 20, height: 20),
-                          label: Text('Lanjutkan dengan Google', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.onSurface)),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: const BorderSide(color: AppTheme.outlineVariant),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ),
-
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
                         child: TextButton.icon(
-                          onPressed: () => context.go('/seller-dashboard'),
+                          onPressed: () => context.push('/login-seller'),
                           icon: const Icon(Icons.storefront, color: AppTheme.secondary),
                           label: const Text('Masuk Sebagai Seller'),
                           style: TextButton.styleFrom(
