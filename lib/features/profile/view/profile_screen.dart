@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/config/app_image.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/controller/auth_controller.dart';
@@ -93,12 +94,14 @@ class ProfileScreen extends HookConsumerWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: AppTheme.surfaceContainerLowest, width: 4),
                     boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-                    image: DecorationImage(
-                      image: NetworkImage(userData?.photoUrl != null && userData!.photoUrl.isNotEmpty
-                          ? userData.photoUrl
-                          : 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlPRfB4riCZ2-0PkNOkW_ZGSyfzej1VAp13CTmKBPVAuH2K5rbm61uPekDOSLVqvYFEE6Hfjh7i5TCJXBQHEbXMafZbVv8kllXVeh6wu6ch2ysN89az98Pppb99-2SA1wtA-nncGcnqRQ8HkRf1HDugQegE5R4sQGMeCZ2evmR9VYfw8PrF__cOD5BcdaCDq8ZL2LBVZEsf7hrrNWUugDFbSov-CsuAnKMNO8bj-jTNX8RD0Nq4f-Vo8R3Yw5tK7y9Qak-EhaRVA'),
-                      fit: BoxFit.cover,
-                    ),
+                  ),
+                  child: AppImage(
+                    imageUrl: userData?.photoUrl != null && userData!.photoUrl.isNotEmpty
+                        ? userData.photoUrl
+                        : 'https://lh3.googleusercontent.com/aida-public/AB6AXuBlPRfB4riCZ2-0PkNOkW_ZGSyfzej1VAp13CTmKBPVAuH2K5rbm61uPekDOSLVqvYFEE6Hfjh7i5TCJXBQHEbXMafZbVv8kllXVeh6wu6ch2ysN89az98Pppb99-2SA1wtA-nncGcnqRQ8HkRf1HDugQegE5R4sQGMeCZ2evmR9VYfw8PrF__cOD5BcdaCDq8ZL2LBVZEsf7hrrNWUugDFbSov-CsuAnKMNO8bj-jTNX8RD0Nq4f-Vo8R3Yw5tK7y9Qak-EhaRVA',
+                    isCircle: true,
+                    width: 96,
+                    height: 96,
                   ),
                 ),
                 Positioned(

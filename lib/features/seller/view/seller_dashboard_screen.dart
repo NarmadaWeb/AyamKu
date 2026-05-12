@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/config/app_image.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../orders/repository/order_repository.dart';
@@ -98,7 +99,7 @@ class SellerDashboardScreen extends ConsumerWidget {
             productsAsync.when(
               data: (products) => Column(
                 children: products.map((p) => ListTile(
-                  leading: Image.network(p.imageUrl, width: 40, height: 40, fit: BoxFit.cover),
+                  leading: AppImage(imageUrl: p.imageUrl, width: 40, height: 40),
                   title: Text(p.name),
                   subtitle: Text(currencyFormat.format(p.price)),
                   trailing: IconButton(
@@ -278,9 +279,6 @@ class SellerDashboardScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(8),
-                      image: imageUrl.isNotEmpty && imageUrl != 'loading'
-                          ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
-                          : null,
                     ),
                     child: imageUrl == 'loading'
                         ? const Center(child: CircularProgressIndicator())
@@ -292,7 +290,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                                   Text('Tambah Foto Produk'),
                                 ],
                               )
-                            : null,
+                            : AppImage(imageUrl: imageUrl, fit: BoxFit.cover),
                   ),
                 ),
                 const SizedBox(height: 16),

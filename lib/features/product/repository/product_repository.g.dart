@@ -50,7 +50,7 @@ final class ProductRepositoryProvider extends $FunctionalProvider<
   }
 }
 
-String _$productRepositoryHash() => r'4456452900f4864af4a239e6faa3850b2a50761b';
+String _$productRepositoryHash() => r'dcfe5af654b874167ba5fc68ea6c2fb399d4d153';
 
 @ProviderFor(products)
 final productsProvider = ProductsProvider._();

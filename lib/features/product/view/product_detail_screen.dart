@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../core/config/app_image.dart';
 import '../../../core/theme/app_theme.dart';
+import '../repository/product_repository.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends ConsumerWidget {
   const ProductDetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productId = GoRouterState.of(context).pathParameters['id'];
+    final productsAsync = ref.watch(productsProvider);
+
+    final product = productsAsync.when(
+      data: (products) => products.firstWhere((p) => p.id == productId, orElse: () => products.first),
+      loading: () => null,
+      error: (_, __) => null,
+    );
+
+    if (product == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
-        title: Text('Dada Ayam Fillet', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppTheme.primary)),
+        title: Text(product.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppTheme.primary)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
           onPressed: () => context.pop(),
@@ -30,8 +46,8 @@ class ProductDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeroImage(context),
-                _buildProductInfo(context),
+                _buildHeroImage(context, imageUrl: product.imageUrl),
+                _buildProductInfo(context, product: product),
               ],
             ),
           ),
@@ -41,13 +57,13 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroImage(BuildContext context) {
+  Widget _buildHeroImage(BuildContext context, {String? imageUrl}) {
     return Stack(
       children: [
         AspectRatio(
           aspectRatio: 16 / 9,
-          child: Image.network(
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuD45Bc7hMmtc5yl5b2o0ROjwl274BytiIaXeA8u4gT-oM0wGV6VbeH065dCoYINotavw1CbHr8nHFnC8jzYCTajvB7Lcz9YkahfT9stiqfn0UeNwEVIyQLwQyLL7HuSikDFeGcG0UHGi9x0AEfjfYljqGxCFE7yYtzY2r0KR7yQLXJuqhd4IBlh1ALJtkxz1qoIAKD33HtAl7V5GQn_qjIbYmewQDdpD12ihYBs9UR9vZksDZcAWEcY2syUi_cd_j8rs-l6mpUzbQ',
+          child: AppImage(
+            imageUrl: imageUrl ?? 'https://lh3.googleusercontent.com/aida-public/AB6AXuD45Bc7hMmtc5yl5b2o0ROjwl274BytiIaXeA8u4gT-oM0wGV6VbeH065dCoYINotavw1CbHr8nHFnC8jzYCTajvB7Lcz9YkahfT9stiqfn0UeNwEVIyQLwQyLL7HuSikDFeGcG0UHGi9x0AEfjfYljqGxCFE7yYtzY2r0KR7yQLXJuqhd4IBlh1ALJtkxz1qoIAKD33HtAl7V5GQn_qjIbYmewQDdpD12ihYBs9UR9vZksDZcAWEcY2syUi_cd_j8rs-l6mpUzbQ',
             fit: BoxFit.cover,
           ),
         ),
@@ -88,27 +104,27 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductInfo(BuildContext context) {
+  Widget _buildProductInfo(BuildContext context, {required dynamic product}) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Dada Ayam Fillet Premium', style: Theme.of(context).textTheme.headlineMedium),
+          Text(product.name, style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 4),
           Text(
-            'Daging dada ayam tanpa tulang dan kulit. Bersih, higienis, dan siap olah untuk berbagai hidangan keluarga.',
+            product.description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('Rp 45.000', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary)),
+              Text('Rp ${product.price.toInt()}', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary)),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
-                child: Text('/ 1 kg', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
+                child: Text(product.unit, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
               ),
             ],
           ),

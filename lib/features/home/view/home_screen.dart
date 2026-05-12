@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/config/app_image.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../repository/notification_repository.dart';
@@ -240,7 +241,7 @@ class HomeScreen extends ConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(product.imageUrl, fit: BoxFit.cover),
+                  AppImage(imageUrl: product.imageUrl, fit: BoxFit.cover),
                   Positioned(
                     top: 8,
                     right: 8,

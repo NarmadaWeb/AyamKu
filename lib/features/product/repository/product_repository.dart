@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/product_model.dart';
 
@@ -8,7 +9,7 @@ part 'product_repository.g.dart';
 
 @riverpod
 ProductRepository productRepository(Ref ref) {
-  return ProductRepository(FirebaseFirestore.instance, FirebaseStorage.instance);
+  return ProductRepository(FirebaseFirestore.instance);
 }
 
 @riverpod
@@ -18,16 +19,17 @@ Stream<List<ProductModel>> products(Ref ref) {
 
 class ProductRepository {
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
 
-  ProductRepository(this._firestore, this._storage);
+  ProductRepository(this._firestore);
 
   Future<String> uploadProductImage(File file) async {
     try {
-      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      final ref = _storage.ref().child('product_images').child('$fileName.jpg');
-      await ref.putFile(file);
-      return await ref.getDownloadURL();
+      // Save locally instead of Firebase Storage
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = 'product_${DateTime.now().millisecondsSinceEpoch}${p.extension(file.path)}';
+      final localFile = File(p.join(appDir.path, fileName));
+      await file.copy(localFile.path);
+      return localFile.path;
     } catch (e) {
       rethrow;
     }

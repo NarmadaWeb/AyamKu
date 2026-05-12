@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter/services.dart';
 import '../model/user_model.dart';
@@ -15,7 +16,6 @@ AuthRepository authRepository(Ref ref) {
     FirebaseAuth.instance,
     FirebaseFirestore.instance,
     GoogleSignIn(),
-    FirebaseStorage.instance,
   );
 }
 
@@ -23,9 +23,8 @@ class AuthRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
-  final FirebaseStorage _storage;
 
-  AuthRepository(this._auth, this._firestore, this._googleSignIn, this._storage);
+  AuthRepository(this._auth, this._firestore, this._googleSignIn);
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -139,9 +138,12 @@ class AuthRepository {
 
   Future<String> uploadProfileImage(String uid, File file) async {
     try {
-      final ref = _storage.ref().child('profile_images').child('$uid.jpg');
-      await ref.putFile(file);
-      return await ref.getDownloadURL();
+      // Save locally instead of Firebase Storage
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = 'profile_$uid${p.extension(file.path)}';
+      final localFile = File(p.join(appDir.path, fileName));
+      await file.copy(localFile.path);
+      return localFile.path;
     } catch (e) {
       rethrow;
     }

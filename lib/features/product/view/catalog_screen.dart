@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../core/config/app_image.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../repository/product_repository.dart';
@@ -170,7 +171,7 @@ class CatalogScreen extends HookConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(product.imageUrl, fit: BoxFit.cover),
+                  AppImage(imageUrl: product.imageUrl, fit: BoxFit.cover),
                   Positioned(
                     top: 0,
                     right: 0,
