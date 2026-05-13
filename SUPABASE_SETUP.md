@@ -101,12 +101,22 @@ Jalankan SQL ini untuk memberikan akses upload:
 
 ```sql
 -- Kebijakan untuk bucket 'avatars'
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
-CREATE POLICY "Authenticated Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
-CREATE POLICY "Authenticated Update" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Public Access Avatars" ON storage.objects;
+CREATE POLICY "Public Access Avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+
+DROP POLICY IF EXISTS "Authenticated Upload Avatars" ON storage.objects;
+CREATE POLICY "Authenticated Upload Avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated Update Avatars" ON storage.objects;
+CREATE POLICY "Authenticated Update Avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.role() = 'authenticated');
 
 -- Kebijakan untuk bucket 'product_images'
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'product_images');
-CREATE POLICY "Authenticated Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product_images' AND auth.role() = 'authenticated');
-CREATE POLICY "Authenticated Update" ON storage.objects FOR UPDATE USING (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Public Access Products" ON storage.objects;
+CREATE POLICY "Public Access Products" ON storage.objects FOR SELECT USING (bucket_id = 'product_images');
+
+DROP POLICY IF EXISTS "Authenticated Upload Products" ON storage.objects;
+CREATE POLICY "Authenticated Upload Products" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated Update Products" ON storage.objects;
+CREATE POLICY "Authenticated Update Products" ON storage.objects FOR UPDATE USING (bucket_id = 'product_images' AND auth.role() = 'authenticated');
 ```
