@@ -89,10 +89,14 @@ ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 3. Buat bucket baru bernama `product_images` dan set sebagai **Public**.
 4. Buat bucket baru bernama `orders` dan set sebagai **Public**.
 
-## 3. Konfigurasi RLS (Row Level Security)
+## 3. Konfigurasi RLS (Row Level Security) & Triggers
 
 ### Tabel Users
 - `Allow select/update for users based on their uid`
+- `Allow insert for authenticated users`:
+  ```sql
+  CREATE POLICY "Allow insert for authenticated users" ON public.users FOR INSERT WITH CHECK (auth.uid() = uid);
+  ```
 
 ### Tabel Products
 - `Allow select for everyone`
@@ -139,3 +143,31 @@ Untuk meningkatkan keamanan akun pengguna, sangat disarankan untuk mengaktifkan 
 1. Pergi ke **Authentication** > **Settings**.
 2. Cari bagian **Password Protection**.
 3. Aktifkan **"Prevent use of leaked passwords"**.
+
+## 5. Sinkronisasi User (Opsional tapi Sangat Disarankan)
+
+Gunakan trigger PostgreSQL untuk secara otomatis membuat data di `public.users` saat user baru mendaftar di `auth.users`. Ini lebih handal daripada menyimpannya dari sisi client.
+
+Jalankan SQL berikut:
+
+```sql
+-- Fungsi untuk menghandle user baru
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (uid, email, name, role)
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'name', 'User'),
+    'user'
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger setelah user baru dibuat di auth.users
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```

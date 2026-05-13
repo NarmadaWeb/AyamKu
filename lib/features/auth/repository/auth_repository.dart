@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/user_model.dart';
@@ -60,7 +61,13 @@ class AuthRepository {
         'address': address,
       });
       if (response.user != null) {
-        await _saveUserData(response.user!.id, email: email, name: name, phoneNumber: phone, address: address, role: 'user');
+        try {
+          await _saveUserData(response.user!.id, email: email, name: name, phoneNumber: phone, address: address, role: 'user');
+        } catch (e) {
+          // Log error but don't break the registration flow
+          // The user is already created in auth.users
+          debugPrint('Error saving user data: $e');
+        }
       }
       return response;
     } catch (e) {
