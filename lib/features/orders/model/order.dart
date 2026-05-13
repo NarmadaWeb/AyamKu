@@ -14,6 +14,8 @@ class OrderModel {
   final String paymentStatus; // 'pending', 'success', 'failed'
   final String? snapToken;
   final String? midtransOrderId;
+  final double? latitude;
+  final double? longitude;
 
   OrderModel({
     required this.id,
@@ -31,6 +33,8 @@ class OrderModel {
     this.paymentStatus = 'pending',
     this.snapToken,
     this.midtransOrderId,
+    this.latitude,
+    this.longitude,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +56,8 @@ class OrderModel {
       paymentStatus: json['paymentStatus'] ?? 'pending',
       snapToken: json['snapToken'],
       midtransOrderId: json['midtransOrderId'],
+      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
+      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
     );
   }
 
@@ -71,6 +77,8 @@ class OrderModel {
       'paymentStatus': paymentStatus,
       'snapToken': snapToken,
       'midtransOrderId': midtransOrderId,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }

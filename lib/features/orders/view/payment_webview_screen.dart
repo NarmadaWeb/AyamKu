@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../repository/order_repository.dart';
 
-class PaymentWebViewScreen extends StatefulWidget {
+class PaymentWebViewScreen extends ConsumerStatefulWidget {
   final String url;
   const PaymentWebViewScreen({super.key, required this.url});
 
   @override
-  State<PaymentWebViewScreen> createState() => _PaymentWebViewScreenState();
+  ConsumerState<PaymentWebViewScreen> createState() => _PaymentWebViewScreenState();
 }
 
-class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
+class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
   late final WebViewController _controller;
   bool _isLoading = true;
 
@@ -50,12 +52,31 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       ..loadRequest(Uri.parse(widget.url));
   }
 
-  void _onPaymentSuccess() {
+  void _onPaymentSuccess() async {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pembayaran Berhasil!'), backgroundColor: Colors.green),
-      );
-      context.go('/orders');
+      // Update order status in Supabase if URL indicates success
+      try {
+        // Extract original order ID from Midtrans order ID (orderId_timestamp)
+        // Midtrans Order IDs used in this app are in format: {orderId}_{timestamp}
+        // Let's find the original orderId in the database using midtransOrderId
+
+        final allOrders = await ref.read(orderRepositoryProvider).getAllOrders().first;
+        final order = allOrders.firstWhere((o) => widget.url.contains(o.midtransOrderId ?? ''));
+
+        await ref.read(orderRepositoryProvider).updateOrder(order.id, {
+          'paymentStatus': 'success',
+          'status': 'Dalam Proses Packing',
+        });
+      } catch (e) {
+        debugPrint('Failed to auto-update order status: $e');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pembayaran Berhasil!'), backgroundColor: Colors.green),
+        );
+        context.go('/orders');
+      }
     }
   }
 

@@ -103,11 +103,14 @@ class OrdersScreen extends ConsumerWidget {
   }
 
   Widget _buildActiveOrder(BuildContext context, OrderModel order, WidgetRef ref) {
-    bool isPaid = order.paymentStatus == 'success' || order.paymentMethod == 'Bayar di Tempat (COD)';
+    bool isPaid = order.paymentStatus == 'success';
+    bool isCOD = order.paymentMethod == 'Bayar di Tempat (COD)';
     bool isConfirmed = order.status != 'Menunggu Konfirmasi';
     bool inTransit = order.status == 'Dalam Pengiriman';
     bool isDone = order.status == 'Selesai';
-    bool needsPaymentProof = order.paymentMethod != 'Bayar di Tempat (COD)' && (order.paymentProofUrl == null || order.paymentProofUrl!.isEmpty);
+
+    // Payment proof is needed ONLY IF it's not COD, not yet paid via Midtrans, and no proof uploaded yet
+    bool needsPaymentProof = !isCOD && !isPaid && (order.paymentProofUrl == null || order.paymentProofUrl!.isEmpty);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -207,11 +210,11 @@ class OrdersScreen extends ConsumerWidget {
           ],
           const Divider(),
           const SizedBox(height: 16),
-          _timelineItem(context, Icons.payments, 'Pembayaran', isPaid ? 'Pembayaran Berhasil' : 'Menunggu Pembayaran', isPaid, true, isCurrent: !isPaid),
-          _timelineItem(context, Icons.receipt_long, 'Konfirmasi', isConfirmed ? 'Pesanan Dikonfirmasi' : 'Menunggu Konfirmasi Seller', isConfirmed, true, isCurrent: isPaid && !isConfirmed),
+          _timelineItem(context, Icons.payments, 'Pembayaran', (isPaid || isCOD) ? 'Pembayaran Berhasil' : 'Menunggu Pembayaran', (isPaid || isCOD), true, isCurrent: !(isPaid || isCOD)),
+          _timelineItem(context, Icons.receipt_long, 'Konfirmasi', isConfirmed ? 'Pesanan Dikonfirmasi' : 'Menunggu Konfirmasi Seller', isConfirmed, true, isCurrent: (isPaid || isCOD) && !isConfirmed),
           _timelineItem(context, Icons.local_shipping, 'Pengiriman', inTransit ? 'Dalam Perjalanan' : 'Pesanan Sedang Dipacking', inTransit, true, isCurrent: isConfirmed && !inTransit),
           _timelineItem(context, Icons.home, 'Selesai', 'Pesanan Sampai Tujuan', isDone, false, isCurrent: inTransit && !isDone),
-          if (!isPaid && order.paymentMethod != 'Bayar di Tempat (COD)') ...[
+          if (!isPaid && !isCOD) ...[
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,

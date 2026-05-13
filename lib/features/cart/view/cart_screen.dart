@@ -193,7 +193,17 @@ class CartScreen extends ConsumerWidget {
                             child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           GestureDetector(
-                            onTap: () => ref.read(cartRepositoryProvider).updateQuantity(item.id, item.quantity + 1),
+                            onTap: () async {
+                              try {
+                                await ref.read(cartRepositoryProvider).updateQuantity(item.id, item.quantity + 1);
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: AppTheme.error),
+                                  );
+                                }
+                              }
+                            },
                             child: Container(
                               decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
                               child: const Icon(Icons.add, size: 16, color: AppTheme.onPrimary),
