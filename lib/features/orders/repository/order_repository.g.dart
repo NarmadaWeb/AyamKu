@@ -47,7 +47,7 @@ final class OrderRepositoryProvider extends $FunctionalProvider<OrderRepository,
   }
 }
 
-String _$orderRepositoryHash() => r'4bbd4e338b0b7f1a48f353f983bb28f91ec33f0d';
+String _$orderRepositoryHash() => r'4dd0247747caf42b3d0c30833256eeb45e90d276';
 
 @ProviderFor(userOrders)
 final userOrdersProvider = UserOrdersProvider._();

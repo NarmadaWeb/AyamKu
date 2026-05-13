@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class OrderModel {
   final String id;
   final String userId;
@@ -27,24 +25,25 @@ class OrderModel {
     required this.paymentMethod,
   });
 
-  factory OrderModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>?;
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-      id: doc.id,
-      userId: data?['userId'] ?? '',
-      userName: data?['userName'] ?? '',
-      userPhone: data?['userPhone'] ?? '',
-      userAddress: data?['userAddress'] ?? '',
-      status: data?['status'] ?? 'Menunggu Konfirmasi',
-      totalPrice: (data?['totalPrice'] ?? 0).toDouble(),
-      items: data?['items'] ?? [],
-      createdAt: (data?['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      deliveryTimeSlot: data?['deliveryTimeSlot'] ?? '',
-      paymentMethod: data?['paymentMethod'] ?? '',
+      id: json['id']?.toString() ?? '',
+      userId: json['userId'] ?? '',
+      userName: json['userName'] ?? '',
+      userPhone: json['userPhone'] ?? '',
+      userAddress: json['userAddress'] ?? '',
+      status: json['status'] ?? 'Menunggu Konfirmasi',
+      totalPrice: (json['totalPrice'] ?? 0).toDouble(),
+      items: json['items'] ?? [],
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'].toString())
+          : DateTime.now(),
+      deliveryTimeSlot: json['deliveryTimeSlot'] ?? '',
+      paymentMethod: json['paymentMethod'] ?? '',
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
       'userId': userId,
       'userName': userName,
@@ -53,7 +52,7 @@ class OrderModel {
       'status': status,
       'totalPrice': totalPrice,
       'items': items,
-      'createdAt': FieldValue.serverTimestamp(),
+      'createdAt': createdAt.toIso8601String(),
       'deliveryTimeSlot': deliveryTimeSlot,
       'paymentMethod': paymentMethod,
     };

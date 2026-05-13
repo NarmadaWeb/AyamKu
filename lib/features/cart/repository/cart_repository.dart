@@ -1,5 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/cart_item_model.dart';
 
@@ -7,7 +6,7 @@ part 'cart_repository.g.dart';
 
 @riverpod
 CartRepository cartRepository(Ref ref) {
-  return CartRepository(FirebaseFirestore.instance, FirebaseAuth.instance);
+  return CartRepository(Supabase.instance.client);
 }
 
 @riverpod
@@ -16,37 +15,41 @@ Stream<List<CartItemModel>> cartItems(Ref ref) {
 }
 
 class CartRepository {
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final SupabaseClient _supabase;
 
-  CartRepository(this._firestore, this._auth);
+  CartRepository(this._supabase);
 
-  String? get _uid => _auth.currentUser?.uid;
+  String? get _uid => _supabase.auth.currentUser?.id;
 
   Stream<List<CartItemModel>> getCartItems() {
     if (_uid == null) return Stream.value([]);
-    return _firestore
-        .collection('users')
-        .doc(_uid)
-        .collection('cart')
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => CartItemModel.fromFirestore(doc)).toList();
-    });
+    return _supabase
+        .from('cart')
+        .stream(primaryKey: ['id'])
+        .eq('userId', _uid!)
+        .map((data) => data.map((json) => CartItemModel.fromJson(json)).toList());
   }
 
   Future<void> addToCart(CartItemModel item) async {
     if (_uid == null) return;
 
-    final cartRef = _firestore.collection('users').doc(_uid).collection('cart');
-    final existingItems = await cartRef.where('productId', isEqualTo: item.productId).get();
+    final existingItem = await _supabase
+        .from('cart')
+        .select()
+        .eq('userId', _uid!)
+        .eq('productId', item.productId)
+        .maybeSingle();
 
-    if (existingItems.docs.isNotEmpty) {
-      final docId = existingItems.docs.first.id;
-      final existingQty = existingItems.docs.first.data()['quantity'] as int;
-      await cartRef.doc(docId).update({'quantity': existingQty + item.quantity});
+    if (existingItem != null) {
+      final existingQty = existingItem['quantity'] as int;
+      await _supabase
+          .from('cart')
+          .update({'quantity': existingQty + item.quantity})
+          .eq('id', existingItem['id']);
     } else {
-      await cartRef.add(item.toFirestore());
+      final json = item.toJson();
+      json['userId'] = _uid;
+      await _supabase.from('cart').insert(json);
     }
   }
 
@@ -55,31 +58,26 @@ class CartRepository {
     if (quantity <= 0) {
       await removeFromCart(itemId);
     } else {
-      await _firestore
-          .collection('users')
-          .doc(_uid)
-          .collection('cart')
-          .doc(itemId)
-          .update({'quantity': quantity});
+      await _supabase
+          .from('cart')
+          .update({'quantity': quantity})
+          .eq('id', itemId);
     }
   }
 
   Future<void> removeFromCart(String itemId) async {
     if (_uid == null) return;
-    await _firestore
-        .collection('users')
-        .doc(_uid)
-        .collection('cart')
-        .doc(itemId)
-        .delete();
+    await _supabase
+        .from('cart')
+        .delete()
+        .eq('id', itemId);
   }
 
   Future<void> clearCart() async {
     if (_uid == null) return;
-    final cartRef = _firestore.collection('users').doc(_uid).collection('cart');
-    final snapshot = await cartRef.get();
-    for (var doc in snapshot.docs) {
-      await doc.reference.delete();
-    }
+    await _supabase
+        .from('cart')
+        .delete()
+        .eq('userId', _uid!);
   }
 }

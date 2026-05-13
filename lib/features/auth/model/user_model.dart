@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class UserModel {
   final String uid;
   final String email;
@@ -21,23 +19,22 @@ class UserModel {
     required this.paymentMethods,
   });
 
-  factory UserModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>?;
+  factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      uid: doc.id,
-      email: data?['email']?.toString() ?? '',
-      name: data?['name']?.toString() ?? 'User',
-      phoneNumber: data?['phoneNumber']?.toString() ?? '',
-      address: data?['address']?.toString() ?? '',
-      photoUrl: data?['photoUrl']?.toString() ?? '',
-      role: data?['role']?.toString() ?? 'user',
-      paymentMethods: data?['paymentMethods'] is List
-          ? List<String>.from((data!['paymentMethods'] as List).map((e) => e.toString()))
+      uid: json['uid']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'User',
+      phoneNumber: json['phoneNumber']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+      photoUrl: json['photoUrl']?.toString() ?? '',
+      role: json['role']?.toString() ?? 'user',
+      paymentMethods: json['paymentMethods'] is List
+          ? List<String>.from((json['paymentMethods'] as List).map((e) => e.toString()))
           : [],
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
       'uid': uid,
       'email': email,

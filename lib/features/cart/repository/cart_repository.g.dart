@@ -48,7 +48,7 @@ final class CartRepositoryProvider
   }
 }
 
-String _$cartRepositoryHash() => r'0b9e95b9ac2d45f18fca4c360edaf9342348a5dd';
+String _$cartRepositoryHash() => r'286b8fcbc1c22a354903c6ac9c87502572edb02b';
 
 @ProviderFor(cartItems)
 final cartItemsProvider = CartItemsProvider._();

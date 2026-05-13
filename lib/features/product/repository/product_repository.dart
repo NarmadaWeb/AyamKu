@@ -1,4 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/product_model.dart';
 
@@ -6,7 +7,7 @@ part 'product_repository.g.dart';
 
 @riverpod
 ProductRepository productRepository(Ref ref) {
-  return ProductRepository(FirebaseFirestore.instance);
+  return ProductRepository(Supabase.instance.client);
 }
 
 @riverpod
@@ -15,25 +16,43 @@ Stream<List<ProductModel>> products(Ref ref) {
 }
 
 class ProductRepository {
-  final FirebaseFirestore _firestore;
+  final SupabaseClient _supabase;
 
-  ProductRepository(this._firestore);
+  ProductRepository(this._supabase);
 
   Stream<List<ProductModel>> getProducts() {
-    return _firestore.collection('products').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => ProductModel.fromFirestore(doc)).toList();
-    });
+    return _supabase
+        .from('products')
+        .stream(primaryKey: ['id'])
+        .map((data) => data.map((json) => ProductModel.fromJson(json)).toList());
   }
 
   Future<void> addProduct(ProductModel product) async {
-    await _firestore.collection('products').add(product.toFirestore());
+    await _supabase.from('products').insert(product.toJson());
   }
 
   Future<void> updateProduct(ProductModel product) async {
-    await _firestore.collection('products').doc(product.id).update(product.toFirestore());
+    await _supabase.from('products').update(product.toJson()).eq('id', product.id);
   }
 
   Future<void> deleteProduct(String productId) async {
-    await _firestore.collection('products').doc(productId).delete();
+    await _supabase.from('products').delete().eq('id', productId);
+  }
+
+  Future<String> uploadProductImage(File file) async {
+    try {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final path = 'product_images/$fileName';
+
+      await _supabase.storage.from('product_images').upload(
+        path,
+        file,
+        fileOptions: const FileOptions(upsert: true),
+      );
+
+      return _supabase.storage.from('product_images').getPublicUrl(path);
+    } catch (e) {
+      rethrow;
+    }
   }
 }
