@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/view/login_screen.dart';
 import '../../features/auth/view/seller_login_screen.dart';
+import '../../features/auth/view/forgot_password_screen.dart';
 import '../../features/auth/view/reset_password_screen.dart';
 import '../../features/home/view/home_screen.dart';
 import '../../features/home/view/splash_screen.dart';
@@ -74,6 +75,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/login-seller',
         builder: (context, state) => const SellerLoginScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         path: '/reset-password',
