@@ -164,6 +164,11 @@ class ProductDetailScreen extends HookConsumerWidget {
           ),
           const SizedBox(height: 24),
 
+          Text('Deskripsi Produk', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          Text(product.description, style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 24),
+
           Text('Catatan Pesanan (Opsional)', style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 8),
           TextField(
