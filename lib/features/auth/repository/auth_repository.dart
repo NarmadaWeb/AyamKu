@@ -110,20 +110,8 @@ class AuthRepository {
       if (extension == '.webp') contentType = 'image/webp';
       if (extension == '.gif') contentType = 'image/gif';
 
-      final fileName = '$uid${DateTime.now().millisecondsSinceEpoch}$extension';
+      final fileName = '$uid-${DateTime.now().millisecondsSinceEpoch}$extension';
       final path = 'profile_images/$fileName';
-
-      // Delete old images if they exist (optional, but good for keeping storage clean)
-      try {
-        final List<FileObject> files = await _supabase.storage.from('avatars').list(path: 'profile_images');
-        final oldFiles = files.where((f) => f.name.startsWith(uid));
-        if (oldFiles.isNotEmpty) {
-          // Add error handling/logging for removal if needed
-          await _supabase.storage.from('avatars').remove(oldFiles.map((f) => 'profile_images/${f.name}').toList());
-        }
-      } catch (e) {
-        debugPrint('Note: Could not delete old profile images: $e');
-      }
 
       await _supabase.storage.from('avatars').upload(
         path,
@@ -135,10 +123,7 @@ class AuthRepository {
       );
 
       // Get public URL
-      final String url = _supabase.storage.from('avatars').getPublicUrl(path);
-
-      // Force refresh by adding timestamp to URL
-      return '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+      return _supabase.storage.from('avatars').getPublicUrl(path);
     } catch (e) {
       debugPrint('Upload Error: $e');
       rethrow;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/view/login_screen.dart';
 import '../../features/auth/view/seller_login_screen.dart';
@@ -17,6 +18,7 @@ import '../../features/orders/view/orders_screen.dart';
 import '../../features/orders/view/order_history_screen.dart';
 import '../../features/orders/view/payment_webview_screen.dart';
 import '../../features/seller/view/seller_dashboard_screen.dart';
+import '../../features/seller/view/seller_order_detail_screen.dart';
 import '../../features/seller/view/add_edit_product_screen.dart';
 import '../../features/loyalty/view/loyalty_screen.dart';
 import '../../features/help/view/help_center_screen.dart';
@@ -34,6 +36,17 @@ class RouterNotifier extends ChangeNotifier {
   RouterNotifier(this._ref) {
     _ref.listen(authControllerProvider, (_, __) => notifyListeners());
     _ref.listen(currentUserDataProvider, (_, __) => notifyListeners());
+
+    // Listen for Auth events like password recovery
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final AuthChangeEvent event = data.event;
+      if (event == AuthChangeEvent.passwordRecovery) {
+        // Use a small delay to ensure GoRouter is ready
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _rootNavigatorKey.currentContext?.go('/reset-password');
+        });
+      }
+    });
   }
 }
 
@@ -108,6 +121,13 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/seller-dashboard',
         builder: (context, state) => const SellerDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/seller/order-detail/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return SellerOrderDetailScreen(orderId: id);
+        },
       ),
       GoRoute(
         path: '/seller/add-product',
