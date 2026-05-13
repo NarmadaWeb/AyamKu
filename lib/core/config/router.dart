@@ -14,6 +14,7 @@ import '../../features/cart/view/checkout_screen.dart';
 import '../../features/profile/view/profile_screen.dart';
 import '../../features/orders/view/orders_screen.dart';
 import '../../features/seller/view/seller_dashboard_screen.dart';
+import '../../features/seller/view/add_edit_product_screen.dart';
 import '../../features/loyalty/view/loyalty_screen.dart';
 import '../../features/help/view/help_center_screen.dart';
 import '../../features/recipes/view/recipes_screen.dart';
@@ -89,6 +90,17 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/seller-dashboard',
         builder: (context, state) => const SellerDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/seller/add-product',
+        builder: (context, state) => const AddEditProductScreen(),
+      ),
+      GoRoute(
+        path: '/seller/edit-product/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          return AddEditProductScreen(productId: id);
+        },
       ),
       GoRoute(
         path: '/loyalty',

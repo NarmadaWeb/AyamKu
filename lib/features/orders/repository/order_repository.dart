@@ -47,7 +47,27 @@ class OrderRepository {
 
   Future<String> createOrder(OrderModel order) async {
     final response = await _supabase.from('orders').insert(order.toJson()).select().single();
-    return response['id'].toString();
+    final orderId = response['id'].toString();
+
+    // Notify sellers
+    try {
+      final sellers = await _supabase.from('users').select('uid').eq('role', 'seller');
+      for (final seller in sellers) {
+        await _supabase.from('notifications').insert({
+          'userId': seller['uid'],
+          'title': 'Pesanan Baru!',
+          'body': 'Ada pesanan baru dari ${order.userName}',
+          'createdAt': DateTime.now().toIso8601String(),
+          'isRead': false,
+          'type': 'new_order',
+          'relatedId': orderId,
+        });
+      }
+    } catch (e) {
+      // Silent error
+    }
+
+    return orderId;
   }
 
   Future<void> decrementStock(String productId, int quantity) async {

@@ -43,7 +43,7 @@ class SellerDashboardScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.add_box, color: AppTheme.primary),
-            onPressed: () => _showAddProductDialog(context, ref),
+            onPressed: () => context.push('/seller/add-product'),
           ),
         ],
       ),
@@ -101,13 +101,33 @@ class SellerDashboardScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             productsAsync.when(
               data: (products) => Column(
-                children: products.map((p) => ListTile(
-                  leading: Image.network(p.imageUrl, width: 40, height: 40, fit: BoxFit.cover),
-                  title: Text(p.name),
-                  subtitle: Text('${currencyFormat.format(p.price)} • Stok: ${p.stock}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit, color: AppTheme.primary),
-                    onPressed: () => _showAddProductDialog(context, ref, product: p),
+                children: products.map((p) => Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(p.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
+                    ),
+                    title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${currencyFormat.format(p.price)} • Stok: ${p.stock}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: AppTheme.primary),
+                          onPressed: () => context.push('/seller/edit-product/${p.id}'),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: AppTheme.error),
+                          onPressed: () => _showDeleteConfirmation(context, ref, p),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
                   ),
                 )).toList(),
               ),
@@ -181,66 +201,93 @@ class SellerDashboardScreen extends ConsumerWidget {
       case 'Dalam Proses Packing':
         nextStatusLabel = 'Kirim Pesanan';
         nextStatus = 'Dalam Pengiriman';
-        statusColor = AppTheme.secondary;
+        statusColor = Colors.orange;
         break;
       case 'Dalam Pengiriman':
         nextStatusLabel = 'Selesaikan';
         nextStatus = 'Selesai';
         statusColor = Colors.blue;
         break;
+      case 'Selesai':
+        statusColor = Colors.green;
+        break;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.surfaceContainerHighest),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('ID: ${order.id.substring(0, 8)}', style: Theme.of(context).textTheme.labelLarge),
-                  Text(order.userName, style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(100)),
-                child: Text(order.status, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: statusColor)),
-              ),
-            ],
-          ),
-          const Divider(height: 24),
-          ...order.items.map((item) => Text('• $item')),
-          const SizedBox(height: 8),
-          Text('Total: ${currencyFormat.format(order.totalPrice)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          if (order.paymentProofUrl != null && order.paymentProofUrl!.isNotEmpty) ...[
-            OutlinedButton.icon(
-              onPressed: () => _showPaymentProofDialog(context, order.paymentProofUrl!),
-              icon: const Icon(Icons.receipt_long),
-              label: const Text('Lihat Bukti Pembayaran'),
-              style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primary),
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      color: AppTheme.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('ID: ${order.id.substring(0, 8).toUpperCase()}', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(order.userName, style: Theme.of(context).textTheme.bodySmall),
+                    Text(order.paymentMethod, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.primary, fontSize: 10)),
+                  ],
+                ),
+                Chip(
+                  label: Text(order.status, style: const TextStyle(fontSize: 10, color: Colors.white)),
+                  backgroundColor: statusColor,
+                  padding: EdgeInsets.zero,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ],
+            ),
+            const Divider(height: 20),
+            ...order.items.map((item) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text('• $item', style: Theme.of(context).textTheme.bodyMedium),
+            )),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Total Tagihan', style: Theme.of(context).textTheme.bodySmall),
+                Text(currencyFormat.format(order.totalPrice), style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
+              ],
             ),
             const SizedBox(height: 12),
-          ],
-          if (nextStatus.isNotEmpty)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => ref.read(orderRepositoryProvider).updateOrderStatus(order.id, nextStatus),
-                child: Text(nextStatusLabel),
+            if (order.paymentProofUrl != null && order.paymentProofUrl!.isNotEmpty) ...[
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showPaymentProofDialog(context, order.paymentProofUrl!),
+                  icon: const Icon(Icons.receipt_long, size: 16),
+                  label: const Text('Lihat Bukti Pembayaran'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primary,
+                    side: const BorderSide(color: AppTheme.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
               ),
-            ),
-        ],
+              const SizedBox(height: 8),
+            ],
+            if (nextStatus.isNotEmpty)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => ref.read(orderRepositoryProvider).updateOrderStatus(order.id, nextStatus),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Text(nextStatusLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -268,125 +315,23 @@ class SellerDashboardScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddProductDialog(BuildContext context, WidgetRef ref, {ProductModel? product}) {
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, ProductModel product) {
     showDialog(
       context: context,
-      builder: (context) => _ProductFormDialog(product: product),
-    );
-  }
-}
-
-class _ProductFormDialog extends HookConsumerWidget {
-  final ProductModel? product;
-  const _ProductFormDialog({this.product});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final nameController = useTextEditingController(text: product?.name);
-    final priceController = useTextEditingController(text: product?.price.toString());
-    final stockController = useTextEditingController(text: product?.stock.toString() ?? '0');
-    final descController = useTextEditingController(text: product?.description);
-    final weightController = useTextEditingController(text: product?.weight);
-    final unitController = useTextEditingController(text: product?.unit ?? '/pack');
-    final categoryController = useTextEditingController(text: product?.category ?? 'Ayam');
-    final imageUrl = useState(product?.imageUrl ?? '');
-    final isUploading = useState(false);
-
-    Future<void> pickImage() async {
-      final picker = ImagePicker();
-      final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-      if (image != null) {
-        isUploading.value = true;
-        try {
-          final url = await ref.read(productRepositoryProvider).uploadProductImage(File(image.path));
-          imageUrl.value = url;
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Gagal upload gambar: $e'), backgroundColor: AppTheme.error),
-            );
-          }
-        } finally {
-          isUploading.value = false;
-        }
-      }
-    }
-
-    return AlertDialog(
-      title: Text(product == null ? 'Tambah Produk' : 'Edit Produk'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: isUploading.value ? null : pickImage,
-              child: Container(
-                height: 150,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(8),
-                  image: imageUrl.value.isNotEmpty
-                      ? DecorationImage(image: NetworkImage(imageUrl.value), fit: BoxFit.cover)
-                      : null,
-                ),
-                child: isUploading.value
-                    ? const Center(child: CircularProgressIndicator())
-                    : imageUrl.value.isEmpty
-                        ? const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_a_photo, size: 40, color: AppTheme.onSurfaceVariant),
-                              SizedBox(height: 8),
-                              Text('Upload Gambar Produk'),
-                            ],
-                          )
-                        : null,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
-            TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
-            TextField(controller: stockController, decoration: const InputDecoration(labelText: 'Stok'), keyboardType: TextInputType.number),
-            TextField(controller: weightController, decoration: const InputDecoration(labelText: 'Berat (misal: 500g)')),
-            TextField(controller: unitController, decoration: const InputDecoration(labelText: 'Unit (misal: /pack)')),
-            TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Kategori')),
-            TextField(controller: descController, decoration: const InputDecoration(labelText: 'Deskripsi')),
-          ],
-        ),
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Produk'),
+        content: Text('Apakah Anda yakin ingin menghapus "${product.name}"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          TextButton(
+            onPressed: () {
+              ref.read(productRepositoryProvider).deleteProduct(product.id);
+              Navigator.pop(context);
+            },
+            child: const Text('Hapus', style: TextStyle(color: AppTheme.error)),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-        ElevatedButton(
-          onPressed: isUploading.value ? null : () {
-            if (imageUrl.value.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Silakan upload gambar produk terlebih dahulu')),
-              );
-              return;
-            }
-            final newProduct = ProductModel(
-              id: product?.id ?? '',
-              name: nameController.text,
-              price: double.tryParse(priceController.text) ?? 0.0,
-              description: descController.text,
-              weight: weightController.text,
-              imageUrl: imageUrl.value,
-              unit: unitController.text,
-              category: categoryController.text,
-              isAvailable: true,
-              stock: int.tryParse(stockController.text) ?? 0,
-            );
-            if (product == null) {
-              ref.read(productRepositoryProvider).addProduct(newProduct);
-            } else {
-              ref.read(productRepositoryProvider).updateProduct(newProduct);
-            }
-            Navigator.pop(context);
-          },
-          child: const Text('Simpan'),
-        ),
-      ],
     );
   }
 }
