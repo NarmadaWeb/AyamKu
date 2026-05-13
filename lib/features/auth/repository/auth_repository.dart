@@ -118,9 +118,12 @@ class AuthRepository {
         final List<FileObject> files = await _supabase.storage.from('avatars').list(path: 'profile_images');
         final oldFiles = files.where((f) => f.name.startsWith(uid));
         if (oldFiles.isNotEmpty) {
+          // Add error handling/logging for removal if needed
           await _supabase.storage.from('avatars').remove(oldFiles.map((f) => 'profile_images/${f.name}').toList());
         }
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Note: Could not delete old profile images: $e');
+      }
 
       await _supabase.storage.from('avatars').upload(
         path,

@@ -128,9 +128,7 @@ class OrderHistoryScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {
-                    // Logic to see details if any
-                  },
+                  onPressed: () => _showOrderDetailDialog(context, order, currencyFormat),
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
@@ -153,6 +151,53 @@ class OrderHistoryScreen extends ConsumerWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showOrderDetailDialog(BuildContext context, OrderModel order, NumberFormat currencyFormat) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Detail Pesanan'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('ID Pesanan: ${order.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              const SizedBox(height: 8),
+              Text('Tanggal: ${DateFormat('dd MMM yyyy, HH:mm').format(order.createdAt)}'),
+              Text('Status: ${order.status}'),
+              const Divider(height: 24),
+              const Text('Produk:', style: TextStyle(fontWeight: FontWeight.bold)),
+              ...order.items.map((item) => Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('• $item'),
+              )),
+              const Divider(height: 24),
+              Text('Waktu Pengiriman: ${order.deliveryTimeSlot}'),
+              Text('Metode Pembayaran: ${order.paymentMethod}'),
+              Text('Status Pembayaran: ${order.paymentStatus}'),
+              const Divider(height: 24),
+              Text('Alamat Pengiriman:', style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(order.userName),
+              Text(order.userPhone),
+              Text(order.userAddress),
+              const Divider(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(currencyFormat.format(order.totalPrice), style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Tutup')),
         ],
       ),
     );

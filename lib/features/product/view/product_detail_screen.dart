@@ -270,26 +270,30 @@ class ProductDetailScreen extends HookConsumerWidget {
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: product.stock <= 0 ? null : () {
-                  if (quantity.value > product.stock) {
-                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Stok tidak mencukupi')),
-                    );
-                    return;
+                onPressed: product.stock <= 0 ? null : () async {
+                  try {
+                    await ref.read(cartRepositoryProvider).addToCart(CartItemModel(
+                      id: '',
+                      productId: product.id,
+                      name: product.name,
+                      price: product.price,
+                      imageUrl: product.imageUrl,
+                      quantity: quantity.value,
+                      unit: product.unit,
+                      weight: product.weight,
+                    ));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: AppTheme.error),
+                      );
+                    }
                   }
-                  ref.read(cartRepositoryProvider).addToCart(CartItemModel(
-                    id: '',
-                    productId: product.id,
-                    name: product.name,
-                    price: product.price,
-                    imageUrl: product.imageUrl,
-                    quantity: quantity.value,
-                    unit: product.unit,
-                    weight: product.weight,
-                  ));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
-                  );
                 },
                 icon: const Icon(Icons.shopping_cart),
                 label: Text(product.stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang'),

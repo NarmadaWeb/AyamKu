@@ -170,21 +170,32 @@ class CatalogScreen extends HookConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(product.imageUrl, fit: BoxFit.cover),
+                  Image.network(product.imageUrl, fit: BoxFit.cover, color: product.stock <= 0 ? Colors.black.withValues(alpha: 0.5) : null, colorBlendMode: product.stock <= 0 ? BlendMode.darken : null),
+                  if (product.stock <= 0)
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.error,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('HABIS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                      ),
+                    ),
                   Positioned(
                     top: 0,
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.secondary,
-                        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8)),
+                      decoration: BoxDecoration(
+                        color: product.stock <= 0 ? AppTheme.error : AppTheme.secondary,
+                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.verified, color: AppTheme.onSecondary, size: 14),
+                          Icon(product.stock <= 0 ? Icons.error_outline : Icons.verified, color: AppTheme.onSecondary, size: 14),
                           const SizedBox(width: 4),
-                          Text('Fresh Today', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSecondary)),
+                          Text(product.stock <= 0 ? 'Stok Habis' : 'Fresh Today', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSecondary)),
                         ],
                       ),
                     ),
@@ -213,25 +224,35 @@ class CatalogScreen extends HookConsumerWidget {
                       children: [
                         Text('Rp ${product.price.toInt()}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.primary)),
                         GestureDetector(
-                          onTap: () {
-                            ref.read(cartRepositoryProvider).addToCart(CartItemModel(
-                              id: '',
-                              productId: product.id,
-                              name: product.name,
-                              price: product.price,
-                              imageUrl: product.imageUrl,
-                              quantity: 1,
-                              unit: product.unit,
-                              weight: product.weight,
-                            ));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
-                            );
+                          onTap: product.stock <= 0 ? null : () async {
+                            try {
+                              await ref.read(cartRepositoryProvider).addToCart(CartItemModel(
+                                id: '',
+                                productId: product.id,
+                                name: product.name,
+                                price: product.price,
+                                imageUrl: product.imageUrl,
+                                quantity: 1,
+                                unit: product.unit,
+                                weight: product.weight,
+                              ));
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: AppTheme.error),
+                                );
+                              }
+                            }
                           },
                           child: Container(
                             width: 32,
                             height: 32,
-                            decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+                            decoration: BoxDecoration(color: product.stock <= 0 ? AppTheme.outline : AppTheme.primary, shape: BoxShape.circle),
                             child: const Icon(Icons.add, color: AppTheme.onPrimary, size: 20),
                           ),
                         ),

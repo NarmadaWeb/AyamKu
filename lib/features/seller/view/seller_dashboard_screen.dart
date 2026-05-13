@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../orders/repository/order_repository.dart';
@@ -226,13 +227,36 @@ class SellerDashboardScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('ID: ${order.id.substring(0, 8).toUpperCase()}', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
-                    Text(order.userName, style: Theme.of(context).textTheme.bodySmall),
-                    Text(order.paymentMethod, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.primary, fontSize: 10)),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('ID: ${order.id.substring(0, 8).toUpperCase()}', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(order.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(order.userPhone, style: Theme.of(context).textTheme.bodySmall),
+                      Text(order.userAddress, style: Theme.of(context).textTheme.bodySmall),
+                      if (order.latitude != null && order.longitude != null)
+                        GestureDetector(
+                          onTap: () async {
+                            final url = 'https://www.google.com/maps/search/?api=1&query=${order.latitude},${order.longitude}';
+                            if (await canLaunchUrl(Uri.parse(url))) {
+                              await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                            }
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
+                                Icon(Icons.location_on, size: 14, color: Colors.blue),
+                                SizedBox(width: 4),
+                                Text('Buka di Maps', style: TextStyle(color: Colors.blue, fontSize: 12, decoration: TextDecoration.underline)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      Text(order.paymentMethod, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.primary, fontSize: 10)),
+                    ],
+                  ),
                 ),
                 Chip(
                   label: Text(order.status, style: const TextStyle(fontSize: 10, color: Colors.white)),
