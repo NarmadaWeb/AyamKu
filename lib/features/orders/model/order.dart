@@ -10,6 +10,7 @@ class OrderModel {
   final DateTime createdAt;
   final String deliveryTimeSlot;
   final String paymentMethod;
+  final String? paymentProofUrl;
 
   OrderModel({
     required this.id,
@@ -23,6 +24,7 @@ class OrderModel {
     required this.createdAt,
     required this.deliveryTimeSlot,
     required this.paymentMethod,
+    this.paymentProofUrl,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class OrderModel {
           : DateTime.now(),
       deliveryTimeSlot: json['deliveryTimeSlot'] ?? '',
       paymentMethod: json['paymentMethod'] ?? '',
+      paymentProofUrl: json['paymentProofUrl'],
     );
   }
 
@@ -55,6 +58,7 @@ class OrderModel {
       'createdAt': createdAt.toIso8601String(),
       'deliveryTimeSlot': deliveryTimeSlot,
       'paymentMethod': paymentMethod,
+      'paymentProofUrl': paymentProofUrl,
     };
   }
 }

@@ -1,53 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../repository/product_repository.dart';
+import '../model/product_model.dart';
+import '../../cart/repository/cart_repository.dart';
+import '../../cart/model/cart_item_model.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends HookConsumerWidget {
   const ProductDetailScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productId = GoRouterState.of(context).pathParameters['id'];
+    final productsAsync = ref.watch(productsProvider);
+    final quantity = useState(1);
+    final currencyFormat = NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
+
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: AppTheme.surface,
-        title: Text('Dada Ayam Fillet', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: AppTheme.primary)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border, color: AppTheme.onSurfaceVariant),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeroImage(context),
-                _buildProductInfo(context),
-              ],
-            ),
-          ),
-          _buildBottomAction(context),
-        ],
+      body: productsAsync.when(
+        data: (products) {
+          final product = products.where((p) => p.id == productId).firstOrNull;
+
+          if (product == null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Produk tidak ditemukan'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Kembali'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.only(bottom: 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeroImage(context, product),
+                    _buildProductInfo(context, product, currencyFormat),
+                  ],
+                ),
+              ),
+              _buildBottomAction(context, product, quantity, ref),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 16,
+                child: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: AppTheme.onSurfaceVariant),
+                    onPressed: () => context.pop(),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
-  Widget _buildHeroImage(BuildContext context) {
+  Widget _buildHeroImage(BuildContext context, ProductModel product) {
     return Stack(
       children: [
         AspectRatio(
           aspectRatio: 16 / 9,
           child: Image.network(
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuD45Bc7hMmtc5yl5b2o0ROjwl274BytiIaXeA8u4gT-oM0wGV6VbeH065dCoYINotavw1CbHr8nHFnC8jzYCTajvB7Lcz9YkahfT9stiqfn0UeNwEVIyQLwQyLL7HuSikDFeGcG0UHGi9x0AEfjfYljqGxCFE7yYtzY2r0KR7yQLXJuqhd4IBlh1ALJtkxz1qoIAKD33HtAl7V5GQn_qjIbYmewQDdpD12ihYBs9UR9vZksDZcAWEcY2syUi_cd_j8rs-l6mpUzbQ',
+            product.imageUrl,
             fit: BoxFit.cover,
           ),
         ),
@@ -88,27 +121,27 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductInfo(BuildContext context) {
+  Widget _buildProductInfo(BuildContext context, ProductModel product, NumberFormat currencyFormat) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Dada Ayam Fillet Premium', style: Theme.of(context).textTheme.headlineMedium),
+          Text(product.name, style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 4),
           Text(
-            'Daging dada ayam tanpa tulang dan kulit. Bersih, higienis, dan siap olah untuk berbagai hidangan keluarga.',
+            product.description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('Rp 45.000', style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary)),
+              Text(currencyFormat.format(product.price), style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppTheme.primary)),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
-                child: Text('/ 1 kg', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
+                child: Text(product.unit, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
               ),
             ],
           ),
@@ -117,20 +150,8 @@ class ProductDetailScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Pilih Berat', style: Theme.of(context).textTheme.labelLarge),
-              Text('Total: Rp 45.000', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.primary)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _weightOption('0.8 kg', false),
-              _weightOption('1 kg', true),
-              _weightOption('1.2 kg', false),
-              _weightOption('1.5 kg', false),
-              _weightOption('2 kg', false),
+              Text('Berat Produk', style: Theme.of(context).textTheme.labelLarge),
+              Text(product.weight, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.primary)),
             ],
           ),
           const SizedBox(height: 24),
@@ -211,7 +232,7 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomAction(BuildContext context) {
+  Widget _buildBottomAction(BuildContext context, ProductModel product, ValueNotifier<int> quantity, WidgetRef ref) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -231,16 +252,38 @@ class ProductDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  IconButton(icon: const Icon(Icons.remove), onPressed: () {}),
-                  const Text('1', style: TextStyle(fontWeight: FontWeight.bold)),
-                  IconButton(icon: const Icon(Icons.add, color: AppTheme.primary), onPressed: () {}),
+                  IconButton(
+                    icon: const Icon(Icons.remove),
+                    onPressed: () {
+                      if (quantity.value > 1) quantity.value--;
+                    },
+                  ),
+                  Text('${quantity.value}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.add, color: AppTheme.primary),
+                    onPressed: () => quantity.value++,
+                  ),
                 ],
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  ref.read(cartRepositoryProvider).addToCart(CartItemModel(
+                    id: '',
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    imageUrl: product.imageUrl,
+                    quantity: quantity.value,
+                    unit: product.unit,
+                    weight: product.weight,
+                  ));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
+                  );
+                },
                 icon: const Icon(Icons.shopping_cart),
                 label: const Text('Tambah ke Keranjang'),
                 style: ElevatedButton.styleFrom(

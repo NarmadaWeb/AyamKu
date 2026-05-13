@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
@@ -55,7 +57,7 @@ class OrdersScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   ...activeOrders.map((o) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildActiveOrder(context, o),
+                        child: _buildActiveOrder(context, o, ref),
                       )),
                   const SizedBox(height: 24),
                 ],
@@ -99,10 +101,11 @@ class OrdersScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActiveOrder(BuildContext context, OrderModel order) {
+  Widget _buildActiveOrder(BuildContext context, OrderModel order, WidgetRef ref) {
     bool isConfirmed = order.status != 'Menunggu Konfirmasi';
     bool inTransit = order.status == 'Dalam Pengiriman';
     bool isDone = order.status == 'Selesai';
+    bool needsPaymentProof = order.paymentMethod != 'Bayar di Tempat (COD)' && (order.paymentProofUrl == null || order.paymentProofUrl!.isEmpty);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -121,7 +124,7 @@ class OrdersScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('ID Pesanan', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                  Text(order.id.isEmpty ? 'Baru' : order.id, style: Theme.of(context).textTheme.labelLarge),
+                  Text(order.id.isEmpty ? 'Baru' : order.id.substring(0, 8), style: Theme.of(context).textTheme.labelLarge),
                 ],
               ),
               Container(
@@ -138,6 +141,53 @@ class OrdersScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
+          if (needsPaymentProof) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryContainer.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppTheme.primaryContainer),
+              ),
+              child: Column(
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: AppTheme.primary, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(child: Text('Silakan upload bukti pembayaran agar pesanan Anda dapat segera dikonfirmasi.', style: TextStyle(fontSize: 12))),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showUploadProofDialog(context, order.id, ref),
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Upload Bukti Pembayaran'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: AppTheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          if (order.paymentProofUrl != null && order.paymentProofUrl!.isNotEmpty) ...[
+             const Row(
+               children: [
+                 Icon(Icons.check_circle, color: Colors.green, size: 16),
+                 SizedBox(width: 8),
+                 Text('Bukti pembayaran telah diunggah', style: TextStyle(fontSize: 12, color: Colors.green)),
+               ],
+             ),
+             const SizedBox(height: 16),
+          ],
           const Divider(),
           const SizedBox(height: 16),
           _timelineItem(context, Icons.receipt_long, 'Pesanan Diproses', DateFormat('hh:mm a').format(order.createdAt), true, true),
@@ -147,6 +197,33 @@ class OrdersScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showUploadProofDialog(BuildContext context, String orderId, WidgetRef ref) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+
+    if (image != null) {
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(child: CircularProgressIndicator()),
+        );
+        try {
+          await ref.read(orderRepositoryProvider).uploadPaymentProof(orderId, File(image.path));
+          if (context.mounted) {
+            Navigator.pop(context); // Close loading
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bukti pembayaran berhasil diunggah!'), backgroundColor: Colors.green));
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.pop(context); // Close loading
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunggah bukti: $e'), backgroundColor: AppTheme.error));
+          }
+        }
+      }
+    }
   }
 
   Widget _timelineItem(BuildContext context, IconData icon, String title, String subtitle, bool isDone, bool showLine, {bool isCurrent = false}) {

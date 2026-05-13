@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/order.dart';
@@ -46,6 +47,25 @@ class OrderRepository {
 
   Future<void> createOrder(OrderModel order) async {
     await _supabase.from('orders').insert(order.toJson());
+  }
+
+  Future<String> uploadPaymentProof(String orderId, File file) async {
+    try {
+      final fileName = '$orderId.jpg';
+      final path = 'payment_proofs/$fileName';
+
+      await _supabase.storage.from('orders').upload(
+        path,
+        file,
+        fileOptions: const FileOptions(upsert: true),
+      );
+
+      final url = _supabase.storage.from('orders').getPublicUrl(path);
+      await _supabase.from('orders').update({'paymentProofUrl': url}).eq('id', orderId);
+      return url;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import '../model/cart_item_model.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../orders/repository/order_repository.dart';
@@ -283,7 +284,7 @@ class CheckoutScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, WidgetRef ref, UserModel? userData, List<dynamic> items, double total, String timeSlot, String payment, NumberFormat currencyFormat) {
+  Widget _buildBottomBar(BuildContext context, WidgetRef ref, UserModel? userData, List<CartItemModel> items, double total, String timeSlot, String payment, NumberFormat currencyFormat) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(

@@ -12,11 +12,15 @@ class LoginScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(authControllerProvider, (previous, next) {
       if (next is AsyncError) {
+        String message = next.error.toString();
+        if (message.contains('Invalid login credentials')) {
+          message = 'Email atau password salah';
+        }
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Login Gagal'),
-            content: Text(next.error.toString()),
+            content: Text(message),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),

@@ -46,17 +46,6 @@ class AuthRepository {
   Future<AuthResponse> signInWithEmailAndPassword(String email, String password) async {
     try {
       final response = await _supabase.auth.signInWithPassword(email: email, password: password);
-      if (response.user != null) {
-        // Ensure indra020204@gmail.com is always a seller
-        if (email == 'indra020204@gmail.com') {
-          final userData = await getUserData(response.user!.id);
-          if (userData != null && userData.role != 'seller') {
-            await updateUserData(response.user!.id, {'role': 'seller'});
-          } else if (userData == null) {
-            await _saveUserData(response.user!.id, email: email, role: 'seller');
-          }
-        }
-      }
       return response;
     } catch (e) {
       rethrow;
@@ -71,8 +60,7 @@ class AuthRepository {
         'address': address,
       });
       if (response.user != null) {
-        final role = email == 'indra020204@gmail.com' ? 'seller' : 'user';
-        await _saveUserData(response.user!.id, email: email, name: name, phoneNumber: phone, address: address, role: role);
+        await _saveUserData(response.user!.id, email: email, name: name, phoneNumber: phone, address: address, role: 'user');
       }
       return response;
     } catch (e) {

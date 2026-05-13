@@ -58,7 +58,8 @@ CREATE TABLE public.orders (
   items JSONB,
   "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "deliveryTimeSlot" TEXT,
-  "paymentMethod" TEXT
+  "paymentMethod" TEXT,
+  "paymentProofUrl" TEXT
 );
 
 -- Tabel Notifications
