@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../orders/model/order.dart';
 import '../../orders/repository/order_repository.dart';
 
-class SellerOrderDetailScreen extends ConsumerWidget {
+class SellerOrderDetailScreen extends HookConsumerWidget {
   final String orderId;
 
   const SellerOrderDetailScreen({super.key, required this.orderId});
@@ -135,7 +136,14 @@ class SellerOrderDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildMapLocation(BuildContext context, OrderModel order) {
-    final position = LatLng(order.latitude!, order.longitude!);
+    final mapUrl = 'https://maps.google.com/maps?q=${order.latitude},${order.longitude}&z=15&output=embed';
+    final controller = useMemoized(() => WebViewController());
+
+    useEffect(() {
+      controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      controller.loadRequest(Uri.parse(mapUrl));
+      return null;
+    }, [order.latitude, order.longitude]);
 
     return Container(
       height: 250,
@@ -148,18 +156,17 @@ class SellerOrderDetailScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           children: [
-            GoogleMap(
-              initialCameraPosition: CameraPosition(target: position, zoom: 15),
-              markers: {
-                Marker(
-                  markerId: const MarkerId('delivery_loc'),
-                  position: position,
-                  infoWindow: InfoWindow(title: order.userName, snippet: 'Lokasi Pengiriman'),
-                ),
+            WebViewWidget(controller: controller),
+            // Overlay to intercept taps and open Google Maps app
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () async {
+                final url = 'https://www.google.com/maps/search/?api=1&query=${order.latitude},${order.longitude}';
+                if (await canLaunchUrl(Uri.parse(url))) {
+                  await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                }
               },
-              liteModeEnabled: false,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: true,
+              child: Container(color: Colors.transparent),
             ),
             Positioned(
               top: 8,
