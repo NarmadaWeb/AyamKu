@@ -109,6 +109,8 @@ CREATE TABLE public.users (
   "photoUrl" TEXT DEFAULT '',
   role TEXT DEFAULT 'user',
   "paymentMethods" JSONB DEFAULT '[]'::jsonb,
+  latitude DECIMAL,
+  longitude DECIMAL,
   "createdAt" TIMESTAMPTZ DEFAULT NOW()
 );
 

@@ -1,7 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/notification_model.dart';
-import '../../../core/services/notification_service.dart';
 
 part 'notification_repository.g.dart';
 
