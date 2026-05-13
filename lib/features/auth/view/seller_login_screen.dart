@@ -31,6 +31,17 @@ class SellerLoginScreen extends HookConsumerWidget {
       }
     });
 
+    ref.listen(currentUserDataProvider, (previous, next) {
+      if (next is AsyncData && next.value != null) {
+        if (next.value!.role != 'seller') {
+          ref.read(authControllerProvider.notifier).signOut();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Akun ini tidak memiliki hak akses sebagai Seller'), backgroundColor: AppTheme.error),
+          );
+        }
+      }
+    });
+
     final authState = ref.watch(authControllerProvider);
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();

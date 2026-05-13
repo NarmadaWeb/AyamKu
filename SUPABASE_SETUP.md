@@ -103,8 +103,10 @@ Jalankan SQL ini untuk memberikan akses upload:
 
 ```sql
 -- Kebijakan untuk bucket 'avatars'
+-- Catatan: SELECT policy untuk public bucket sebaiknya tidak dibuat secara luas agar tidak bisa 'listing' file (Keamanan).
+-- Public URL tetap bisa diakses meskipun SELECT policy dihapus jika bucket diset sebagai Public.
+
 DROP POLICY IF EXISTS "Public Access Avatars" ON storage.objects;
-CREATE POLICY "Public Access Avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
 
 DROP POLICY IF EXISTS "Authenticated Upload Avatars" ON storage.objects;
 CREATE POLICY "Authenticated Upload Avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
@@ -114,7 +116,6 @@ CREATE POLICY "Authenticated Update Avatars" ON storage.objects FOR UPDATE USING
 
 -- Kebijakan untuk bucket 'product_images'
 DROP POLICY IF EXISTS "Public Access Products" ON storage.objects;
-CREATE POLICY "Public Access Products" ON storage.objects FOR SELECT USING (bucket_id = 'product_images');
 
 DROP POLICY IF EXISTS "Authenticated Upload Products" ON storage.objects;
 CREATE POLICY "Authenticated Upload Products" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product_images' AND auth.role() = 'authenticated');
@@ -124,7 +125,6 @@ CREATE POLICY "Authenticated Update Products" ON storage.objects FOR UPDATE USIN
 
 -- Kebijakan untuk bucket 'orders' (Bukti Pembayaran)
 DROP POLICY IF EXISTS "Public Access Orders" ON storage.objects;
-CREATE POLICY "Public Access Orders" ON storage.objects FOR SELECT USING (bucket_id = 'orders');
 
 DROP POLICY IF EXISTS "Authenticated Upload Orders" ON storage.objects;
 CREATE POLICY "Authenticated Upload Orders" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'orders' AND auth.role() = 'authenticated');
@@ -132,3 +132,10 @@ CREATE POLICY "Authenticated Upload Orders" ON storage.objects FOR INSERT WITH C
 DROP POLICY IF EXISTS "Authenticated Update Orders" ON storage.objects;
 CREATE POLICY "Authenticated Update Orders" ON storage.objects FOR UPDATE USING (bucket_id = 'orders' AND auth.role() = 'authenticated');
 ```
+
+## 4. Keamanan Autentikasi
+
+Untuk meningkatkan keamanan akun pengguna, sangat disarankan untuk mengaktifkan fitur **"Leaked Password Protection"** di Dashboard Supabase:
+1. Pergi ke **Authentication** > **Settings**.
+2. Cari bagian **Password Protection**.
+3. Aktifkan **"Prevent use of leaked passwords"**.
