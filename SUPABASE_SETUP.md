@@ -87,6 +87,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 1. Buka menu **Storage** di Dashboard Supabase.
 2. Buat bucket baru bernama `avatars` dan set sebagai **Public**.
 3. Buat bucket baru bernama `product_images` dan set sebagai **Public**.
+4. Buat bucket baru bernama `orders` dan set sebagai **Public**.
 
 ## 3. Konfigurasi RLS (Row Level Security)
 
@@ -120,4 +121,14 @@ CREATE POLICY "Authenticated Upload Products" ON storage.objects FOR INSERT WITH
 
 DROP POLICY IF EXISTS "Authenticated Update Products" ON storage.objects;
 CREATE POLICY "Authenticated Update Products" ON storage.objects FOR UPDATE USING (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+
+-- Kebijakan untuk bucket 'orders' (Bukti Pembayaran)
+DROP POLICY IF EXISTS "Public Access Orders" ON storage.objects;
+CREATE POLICY "Public Access Orders" ON storage.objects FOR SELECT USING (bucket_id = 'orders');
+
+DROP POLICY IF EXISTS "Authenticated Upload Orders" ON storage.objects;
+CREATE POLICY "Authenticated Upload Orders" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'orders' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated Update Orders" ON storage.objects;
+CREATE POLICY "Authenticated Update Orders" ON storage.objects FOR UPDATE USING (bucket_id = 'orders' AND auth.role() = 'authenticated');
 ```

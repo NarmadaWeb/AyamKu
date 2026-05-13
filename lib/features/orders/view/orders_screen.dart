@@ -124,7 +124,7 @@ class OrdersScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('ID Pesanan', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-                  Text(order.id.isEmpty ? 'Baru' : order.id.substring(0, 8), style: Theme.of(context).textTheme.labelLarge),
+                  Text(order.id.length > 8 ? order.id.substring(0, 8) : (order.id.isEmpty ? 'Baru' : order.id), style: Theme.of(context).textTheme.labelLarge),
                 ],
               ),
               Container(
