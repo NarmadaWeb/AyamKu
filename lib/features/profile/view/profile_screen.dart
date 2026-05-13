@@ -155,8 +155,17 @@ class ProfileScreen extends HookConsumerWidget {
                 try {
                   final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
                   if (image != null) {
+                    final file = File(image.path);
+                    if (await file.length() > 2 * 1024 * 1024) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Ukuran gambar terlalu besar (Maksimal 2MB)'), backgroundColor: AppTheme.error),
+                        );
+                      }
+                      return;
+                    }
                     if (context.mounted) {
-                      _uploadImage(context, ref, userData.uid, File(image.path));
+                      _uploadImage(context, ref, userData.uid, file);
                     }
                   }
                 } catch (e) {
@@ -177,8 +186,17 @@ class ProfileScreen extends HookConsumerWidget {
                 try {
                   final image = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
                   if (image != null) {
+                    final file = File(image.path);
+                    if (await file.length() > 2 * 1024 * 1024) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Ukuran gambar terlalu besar (Maksimal 2MB)'), backgroundColor: AppTheme.error),
+                        );
+                      }
+                      return;
+                    }
                     if (context.mounted) {
-                      _uploadImage(context, ref, userData.uid, File(image.path));
+                      _uploadImage(context, ref, userData.uid, file);
                     }
                   }
                 } catch (e) {

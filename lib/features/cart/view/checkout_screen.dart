@@ -399,8 +399,9 @@ class CheckoutScreen extends HookConsumerWidget {
                   }
 
                   if (payment != 'Bayar di Tempat (COD)') {
+                    final uniqueOrderId = '${orderId}_${DateTime.now().millisecondsSinceEpoch}';
                     final midtransResponse = await ref.read(midtransServiceProvider).createTransaction(
-                      orderId: orderId,
+                      orderId: uniqueOrderId,
                       grossAmount: total,
                       customerName: userData.name,
                       customerEmail: userData.email,
@@ -412,7 +413,7 @@ class CheckoutScreen extends HookConsumerWidget {
 
                     await ref.read(orderRepositoryProvider).updateOrder(orderId, {
                       'snapToken': snapToken,
-                      'midtransOrderId': orderId,
+                      'midtransOrderId': uniqueOrderId,
                     });
 
                     await ref.read(cartRepositoryProvider).clearCart();

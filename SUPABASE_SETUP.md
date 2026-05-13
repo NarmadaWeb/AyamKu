@@ -264,22 +264,31 @@ CREATE POLICY "Users can insert own orders" ON public.orders
 CREATE POLICY "Users can update own orders" ON public.orders
   FOR UPDATE USING (auth.uid() = "userId");
 
-CREATE POLICY "Admins can view all orders" ON public.orders
+CREATE POLICY "Sellers and admins can view all orders" ON public.orders
   FOR SELECT USING (
-    auth.uid() IN (SELECT uid FROM public.users WHERE role = 'admin')
+    auth.uid() IN (SELECT uid FROM public.users WHERE role IN ('seller', 'admin'))
+  );
+
+CREATE POLICY "Sellers and admins can update all orders" ON public.orders
+  FOR UPDATE USING (
+    auth.uid() IN (SELECT uid FROM public.users WHERE role IN ('seller', 'admin'))
   );
 
 -- notifications
 CREATE POLICY "Users can view own notifications" ON public.notifications
   FOR SELECT USING (auth.uid() = "userId");
 
+CREATE POLICY "Sellers and admins can view all notifications" ON public.notifications
+  FOR SELECT USING (
+    auth.uid() IN (SELECT uid FROM public.users WHERE role IN ('seller', 'admin'))
+  );
+
 CREATE POLICY "Users can update own notifications" ON public.notifications
   FOR UPDATE USING (auth.uid() = "userId");
 
-CREATE POLICY "System or admin can insert notifications" ON public.notifications
+CREATE POLICY "Authenticated users can insert notifications" ON public.notifications
   FOR INSERT WITH CHECK (
-    auth.uid() IS NULL OR
-    auth.uid() IN (SELECT uid FROM public.users WHERE role = 'admin')
+    auth.role() = 'authenticated'
   );
 ```
 

@@ -48,6 +48,8 @@ class MidtransService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
+      // Log for debugging
+      print('Midtrans Error: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to create Midtrans transaction: ${response.body}');
     }
   }

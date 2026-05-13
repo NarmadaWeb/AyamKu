@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -103,16 +104,25 @@ class AuthRepository {
 
   Future<String> uploadProfileImage(String uid, File file) async {
     try {
-      final fileName = '$uid.jpg';
+      final extension = p.extension(file.path).replaceAll('.', '');
+      final contentType = extension == 'png' ? 'image/png' : 'image/jpeg';
+      final fileName = '$uid.$extension';
       final path = 'profile_images/$fileName';
 
       await _supabase.storage.from('avatars').upload(
         path,
         file,
-        fileOptions: const FileOptions(upsert: true),
+        fileOptions: FileOptions(
+          upsert: true,
+          contentType: contentType,
+        ),
       );
 
-      return _supabase.storage.from('avatars').getPublicUrl(path);
+      // Get public URL
+      final String url = _supabase.storage.from('avatars').getPublicUrl(path);
+
+      // Force refresh by adding timestamp to URL
+      return '$url?t=${DateTime.now().millisecondsSinceEpoch}';
     } catch (e) {
       rethrow;
     }
