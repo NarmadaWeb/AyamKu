@@ -1,0 +1,90 @@
+<mxfile host="65bd71144e">
+    <diagram id="user-registration-swimlane" name="Pendaftaran User">
+        <mxGraphModel dx="1200" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="pool" value="Activity Pendaftaran" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=40;horizontal=1;horizontalStack=1;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="40" width="760" height="850" as="geometry"/>
+                </mxCell>
+                <mxCell id="lane_user" value="User" style="swimlane;startSize=40;" vertex="1" parent="pool">
+                    <mxGeometry x="0" y="40" width="380" height="810" as="geometry"/>
+                </mxCell>
+                <mxCell id="start" value="" style="ellipse;fillColor=#000000;strokeColor=none;" vertex="1" parent="lane_user">
+                    <mxGeometry x="175" y="30" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="act1" value="Klik 'Daftar Sekarang'" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="90" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act3" value="Input Nama, Email, Password" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="210" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act4" value="Klik Tombol Daftar" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="300" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="act8" value="Masuk ke Halaman Utama" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="680" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="end" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="lane_user">
+                    <mxGeometry x="175" y="750" width="30" height="30" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="lane_sistem" value="Sistem" style="swimlane;startSize=40;" vertex="1" parent="pool">
+                    <mxGeometry x="380" y="40" width="380" height="810" as="geometry"/>
+                </mxCell>
+                <mxCell id="act2" value="Tampil Form Registrasi" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="130" y="150" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act5" value="Supabase Auth SignUp" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="130" y="370" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="dec_auth" value="Berhasil?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="150" y="450" width="80" height="80" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="fork1" value="" style="line;strokeWidth=6;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="100" y="560" width="180" height="10" as="geometry"/>
+                </mxCell>
+                <mxCell id="act6" value="Insert public.users" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="50" y="600" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act7" value="Login Otomatis" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="220" y="600" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="join1" value="" style="line;strokeWidth=6;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="100" y="660" width="180" height="10" as="geometry"/>
+                </mxCell>
+
+                <!-- Edges -->
+                <mxCell id="e1" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="start" target="act1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act1" target="act2">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="600" y="150"/></Array></mxGeometry>
+                </mxCell>
+                <mxCell id="e3" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="act2" target="act3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act3" target="act4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="act4" target="act5">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act5" target="dec_auth">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" value="Y" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec_auth" target="fork1"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e8" value="T" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec_auth" target="act3"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="100" y="490"/><mxPoint x="100" y="230"/></Array></mxGeometry></mxCell>
+
+                <mxCell id="e9" style="endArrow=classic;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="fork1" target="act6"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e10" style="endArrow=classic;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="fork1" target="act7"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e11" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act6" target="join1"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e12" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act7" target="join1"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e13" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="join1" target="act8"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="570" y="740"/></Array></mxGeometry></mxCell>
+                <mxCell id="e14" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act8" target="end"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
