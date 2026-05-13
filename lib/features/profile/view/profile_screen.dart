@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/controller/auth_controller.dart';
@@ -243,50 +245,101 @@ class ProfileScreen extends HookConsumerWidget {
     final nameController = TextEditingController(text: userData?.name);
     final phoneController = TextEditingController(text: userData?.phoneNumber);
     final addressController = TextEditingController(text: userData?.address);
+    double? latitude = userData?.latitude;
+    double? longitude = userData?.longitude;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Profil'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama')),
-              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Nomor Handphone')),
-              TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Alamat')),
-            ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Edit Profil'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama')),
+                TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Nomor Handphone')),
+                TextField(
+                  controller: addressController,
+                  decoration: const InputDecoration(
+                    labelText: 'Alamat',
+                    hintText: 'Masukkan alamat atau gunakan GPS',
+                  ),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    try {
+                      LocationPermission permission = await Geolocator.checkPermission();
+                      if (permission == LocationPermission.denied) {
+                        permission = await Geolocator.requestPermission();
+                      }
+
+                      if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+                        final position = await Geolocator.getCurrentPosition();
+                        latitude = position.latitude;
+                        longitude = position.longitude;
+
+                        List<Placemark> placemarks = await placemarkFromCoordinates(latitude!, longitude!);
+                        if (placemarks.isNotEmpty) {
+                          Placemark place = placemarks.first;
+                          addressController.text = "${place.street}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}, ${place.postalCode}";
+                        }
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Lokasi berhasil didapatkan')),
+                        );
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Gagal mendapatkan lokasi: $e'), backgroundColor: AppTheme.error),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.my_location),
+                  label: const Text('Gunakan Lokasi Saat Ini'),
+                ),
+                if (latitude != null)
+                   Padding(
+                     padding: const EdgeInsets.only(top: 8),
+                     child: Text('Kordinat: $latitude, $longitude', style: const TextStyle(fontSize: 10, color: AppTheme.onSurfaceVariant)),
+                   ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () async {
-              if (userData != null) {
-                try {
-                  await ref.read(authRepositoryProvider).updateUserData(userData.uid, {
-                    'name': nameController.text,
-                    'phoneNumber': phoneController.text,
-                    'address': addressController.text,
-                  });
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Profil berhasil diperbarui'), backgroundColor: Colors.green),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal memperbarui profil: $e'), backgroundColor: AppTheme.error),
-                    );
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            ElevatedButton(
+              onPressed: () async {
+                if (userData != null) {
+                  try {
+                    await ref.read(authRepositoryProvider).updateUserData(userData.uid, {
+                      'name': nameController.text,
+                      'phoneNumber': phoneController.text,
+                      'address': addressController.text,
+                      'latitude': latitude,
+                      'longitude': longitude,
+                    });
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Profil berhasil diperbarui'), backgroundColor: Colors.green),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Gagal memperbarui profil: $e'), backgroundColor: AppTheme.error),
+                      );
+                    }
                   }
                 }
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
       ),
     );
   }

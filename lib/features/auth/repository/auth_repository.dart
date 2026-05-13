@@ -104,10 +104,23 @@ class AuthRepository {
 
   Future<String> uploadProfileImage(String uid, File file) async {
     try {
-      final extension = p.extension(file.path).replaceAll('.', '');
-      final contentType = extension == 'png' ? 'image/png' : 'image/jpeg';
-      final fileName = '$uid.$extension';
+      final extension = p.extension(file.path).toLowerCase();
+      String contentType = 'image/jpeg';
+      if (extension == '.png') contentType = 'image/png';
+      if (extension == '.webp') contentType = 'image/webp';
+      if (extension == '.gif') contentType = 'image/gif';
+
+      final fileName = '$uid${DateTime.now().millisecondsSinceEpoch}$extension';
       final path = 'profile_images/$fileName';
+
+      // Delete old images if they exist (optional, but good for keeping storage clean)
+      try {
+        final List<FileObject> files = await _supabase.storage.from('avatars').list(path: 'profile_images');
+        final oldFiles = files.where((f) => f.name.startsWith(uid));
+        if (oldFiles.isNotEmpty) {
+          await _supabase.storage.from('avatars').remove(oldFiles.map((f) => 'profile_images/${f.name}').toList());
+        }
+      } catch (_) {}
 
       await _supabase.storage.from('avatars').upload(
         path,
@@ -124,16 +137,26 @@ class AuthRepository {
       // Force refresh by adding timestamp to URL
       return '$url?t=${DateTime.now().millisecondsSinceEpoch}';
     } catch (e) {
+      debugPrint('Upload Error: $e');
       rethrow;
     }
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await _supabase.auth.resetPasswordForEmail(email);
+      await _supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: kIsWeb ? null : 'ayamsegar://reset-password',
+      );
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    await _supabase.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
   }
 
   Future<void> signOut() async {

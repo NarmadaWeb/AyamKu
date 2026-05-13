@@ -148,8 +148,26 @@ class CartScreen extends ConsumerWidget {
                   children: [
                     Expanded(child: Text(item.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis)),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppTheme.onSurfaceVariant, size: 20),
-                      onPressed: () => ref.read(cartRepositoryProvider).removeFromCart(item.id),
+                      icon: const Icon(Icons.delete_outline, color: AppTheme.error, size: 20),
+                      onPressed: () {
+                         showDialog(
+                           context: context,
+                           builder: (context) => AlertDialog(
+                             title: const Text('Hapus Item?'),
+                             content: Text('Apakah Anda yakin ingin menghapus ${item.name} dari keranjang?'),
+                             actions: [
+                               TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+                               TextButton(
+                                 onPressed: () {
+                                   ref.read(cartRepositoryProvider).removeFromCart(item.id);
+                                   Navigator.pop(context);
+                                 },
+                                 child: const Text('Hapus', style: TextStyle(color: AppTheme.error)),
+                               ),
+                             ],
+                           ),
+                         );
+                      },
                     ),
                   ],
                 ),
