@@ -10,6 +10,8 @@ import '../../orders/model/order.dart';
 import '../../auth/model/user_model.dart';
 import '../repository/cart_repository.dart';
 import 'package:intl/intl.dart';
+import '../../orders/repository/midtrans_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CheckoutScreen extends HookConsumerWidget {
   const CheckoutScreen({super.key});
@@ -351,25 +353,105 @@ class CheckoutScreen extends HookConsumerWidget {
             ElevatedButton(
               onPressed: () async {
                 if (userData == null) return;
-                final order = OrderModel(
-                  id: '',
-                  userId: userData.uid,
-                  userName: userData.name,
-                  userPhone: userData.phoneNumber,
-                  userAddress: userData.address,
-                  status: 'Menunggu Konfirmasi',
-                  totalPrice: total,
-                  items: items.map((e) => '${e.quantity}x ${e.name}').toList(),
-                  createdAt: DateTime.now(),
-                  deliveryTimeSlot: timeSlot,
-                  paymentMethod: payment,
-                );
-                await ref.read(orderRepositoryProvider).createOrder(order);
-                await ref.read(cartRepositoryProvider).clearCart();
 
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pesanan berhasil dibuat!')));
-                  context.go('/orders');
+                // Show processing dialog
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Memproses Pesanan...'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+
+                try {
+                  final initialOrder = OrderModel(
+                    id: '',
+                    userId: userData.uid,
+                    userName: userData.name,
+                    userPhone: userData.phoneNumber,
+                    userAddress: userData.address,
+                    status: 'Menunggu Konfirmasi',
+                    totalPrice: total,
+                    items: items.map((e) => '${e.quantity}x ${e.name}').toList(),
+                    createdAt: DateTime.now(),
+                    deliveryTimeSlot: timeSlot,
+                    paymentMethod: payment,
+                    paymentStatus: 'pending',
+                  );
+
+                  final orderId = await ref.read(orderRepositoryProvider).createOrder(initialOrder);
+
+                  // Decrement Stock
+                  for (final item in items) {
+                    await ref.read(orderRepositoryProvider).decrementStock(item.productId, item.quantity);
+                  }
+
+                  if (payment != 'Bayar di Tempat (COD)') {
+                    final midtransResponse = await ref.read(midtransServiceProvider).createTransaction(
+                      orderId: orderId,
+                      grossAmount: total,
+                      customerName: userData.name,
+                      customerEmail: userData.email,
+                      customerPhone: userData.phoneNumber,
+                    );
+
+                    final snapToken = midtransResponse['token'];
+                    final redirectUrl = midtransResponse['redirect_url'];
+
+                    await ref.read(orderRepositoryProvider).updateOrder(orderId, {
+                      'snapToken': snapToken,
+                      'midtransOrderId': orderId,
+                    });
+
+                    await ref.read(cartRepositoryProvider).clearCart();
+
+                    if (context.mounted) {
+                      Navigator.pop(context); // Close processing dialog
+                      final url = Uri.parse(redirectUrl);
+                      bool launched = false;
+                      if (await canLaunchUrl(url)) {
+                        launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+                      }
+
+                      if (!launched && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Tidak dapat membuka halaman pembayaran')),
+                        );
+                      }
+
+                      if (context.mounted) {
+                        context.go('/orders');
+                      }
+                    }
+                  } else {
+                    await ref.read(cartRepositoryProvider).clearCart();
+                    if (context.mounted) {
+                      Navigator.pop(context); // Close processing dialog
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Pesanan berhasil dibuat!'), backgroundColor: Colors.green),
+                      );
+                      context.go('/orders');
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    Navigator.pop(context); // Close processing dialog
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Gagal memproses pesanan: $e'), backgroundColor: AppTheme.error),
+                    );
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(

@@ -62,11 +62,14 @@ class SellerDashboardScreen extends ConsumerWidget {
                     Text('Ringkasan toko Anda hari ini', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant)),
                   ],
                 ),
-                OutlinedButton.icon(
+                ElevatedButton.icon(
                   onPressed: () => context.go('/'),
                   icon: const Icon(Icons.swap_horiz, size: 16),
                   label: const Text('Mode Pembeli'),
-                  style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primary),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: AppTheme.onPrimary,
+                  ),
                 ),
               ],
             ),
@@ -101,7 +104,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                 children: products.map((p) => ListTile(
                   leading: Image.network(p.imageUrl, width: 40, height: 40, fit: BoxFit.cover),
                   title: Text(p.name),
-                  subtitle: Text(currencyFormat.format(p.price)),
+                  subtitle: Text('${currencyFormat.format(p.price)} • Stok: ${p.stock}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.edit, color: AppTheme.primary),
                     onPressed: () => _showAddProductDialog(context, ref, product: p),
@@ -281,6 +284,7 @@ class _ProductFormDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final nameController = useTextEditingController(text: product?.name);
     final priceController = useTextEditingController(text: product?.price.toString());
+    final stockController = useTextEditingController(text: product?.stock.toString() ?? '0');
     final descController = useTextEditingController(text: product?.description);
     final weightController = useTextEditingController(text: product?.weight);
     final unitController = useTextEditingController(text: product?.unit ?? '/pack');
@@ -343,6 +347,7 @@ class _ProductFormDialog extends HookConsumerWidget {
             const SizedBox(height: 16),
             TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
             TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
+            TextField(controller: stockController, decoration: const InputDecoration(labelText: 'Stok'), keyboardType: TextInputType.number),
             TextField(controller: weightController, decoration: const InputDecoration(labelText: 'Berat (misal: 500g)')),
             TextField(controller: unitController, decoration: const InputDecoration(labelText: 'Unit (misal: /pack)')),
             TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Kategori')),
@@ -370,6 +375,7 @@ class _ProductFormDialog extends HookConsumerWidget {
               unit: unitController.text,
               category: categoryController.text,
               isAvailable: true,
+              stock: int.tryParse(stockController.text) ?? 0,
             );
             if (product == null) {
               ref.read(productRepositoryProvider).addProduct(newProduct);

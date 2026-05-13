@@ -45,8 +45,19 @@ class OrderRepository {
         .map((data) => data.map((json) => OrderModel.fromJson(json)).toList());
   }
 
-  Future<void> createOrder(OrderModel order) async {
-    await _supabase.from('orders').insert(order.toJson());
+  Future<String> createOrder(OrderModel order) async {
+    final response = await _supabase.from('orders').insert(order.toJson()).select().single();
+    return response['id'].toString();
+  }
+
+  Future<void> decrementStock(String productId, int quantity) async {
+    try {
+      final productData = await _supabase.from('products').select('stock').eq('id', productId).single();
+      final currentStock = productData['stock'] as int;
+      await _supabase.from('products').update({'stock': currentStock - quantity}).eq('id', productId);
+    } catch (e) {
+      // Log error or handle
+    }
   }
 
   Future<String> uploadPaymentProof(String orderId, File file) async {
@@ -66,6 +77,10 @@ class OrderRepository {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<void> updateOrder(String orderId, Map<String, dynamic> updates) async {
+    await _supabase.from('orders').update(updates).eq('id', orderId);
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {

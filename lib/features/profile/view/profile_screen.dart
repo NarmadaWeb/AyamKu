@@ -49,10 +49,11 @@ class ProfileScreen extends HookConsumerWidget {
                     _buildProfileHeader(context, userData, ref),
                     const SizedBox(height: 24),
                     _buildSettingsLinks(context, userData, ref),
-                    const SizedBox(height: 24),
-                    if (userData?.role == 'seller')
-                      _buildSellerModeAction(context),
                     const SizedBox(height: 32),
+                    if (userData?.role == 'seller') ...[
+                      _buildSellerModeAction(context),
+                      const SizedBox(height: 16),
+                    ],
                     _buildLogoutAction(context, ref),
                     const SizedBox(height: 100),
                   ],
@@ -368,15 +369,14 @@ class ProfileScreen extends HookConsumerWidget {
   Widget _buildSellerModeAction(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: OutlinedButton.icon(
+      child: ElevatedButton.icon(
         onPressed: () => context.go('/seller-dashboard'),
-        icon: const Icon(Icons.storefront, color: AppTheme.secondary),
-        label: Text('Switch to Seller Mode', style: Theme.of(context).textTheme.labelLarge),
-        style: OutlinedButton.styleFrom(
+        icon: const Icon(Icons.storefront, color: Colors.white),
+        label: Text('Kembali ke Dashboard Penjual', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white)),
+        style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          side: const BorderSide(color: AppTheme.outlineVariant),
+          backgroundColor: AppTheme.secondary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          backgroundColor: AppTheme.surfaceContainer,
         ),
       ),
     );

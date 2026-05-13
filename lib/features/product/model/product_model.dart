@@ -8,6 +8,7 @@ class ProductModel {
   final String category;
   final bool isAvailable;
   final String weight;
+  final int stock;
 
   ProductModel({
     required this.id,
@@ -19,6 +20,7 @@ class ProductModel {
     required this.category,
     required this.isAvailable,
     required this.weight,
+    required this.stock,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class ProductModel {
       category: json['category'] ?? '',
       isAvailable: json['isAvailable'] ?? true,
       weight: json['weight'] ?? '',
+      stock: json['stock'] ?? 0,
     );
   }
 
@@ -45,6 +48,7 @@ class ProductModel {
       'category': category,
       'isAvailable': isAvailable,
       'weight': weight,
+      'stock': stock,
     };
   }
 }

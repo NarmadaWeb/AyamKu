@@ -8,6 +8,7 @@ import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
 import '../repository/order_repository.dart';
 import '../model/order.dart';
+import '../repository/midtrans_service.dart';
 
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
@@ -102,6 +103,7 @@ class OrdersScreen extends ConsumerWidget {
   }
 
   Widget _buildActiveOrder(BuildContext context, OrderModel order, WidgetRef ref) {
+    bool isPaid = order.paymentStatus == 'success' || order.paymentMethod == 'Bayar di Tempat (COD)';
     bool isConfirmed = order.status != 'Menunggu Konfirmasi';
     bool inTransit = order.status == 'Dalam Pengiriman';
     bool isDone = order.status == 'Selesai';
@@ -127,16 +129,31 @@ class OrdersScreen extends ConsumerWidget {
                   Text(order.id.length > 8 ? order.id.substring(0, 8) : (order.id.isEmpty ? 'Baru' : order.id), style: Theme.of(context).textTheme.labelLarge),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: AppTheme.secondaryContainer, borderRadius: BorderRadius.circular(100)),
-                child: Row(
-                  children: [
-                    const Icon(Icons.local_shipping, size: 14, color: AppTheme.onSecondaryContainer),
-                    const SizedBox(width: 4),
-                    Text(order.status, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSecondaryContainer)),
-                  ],
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: AppTheme.secondaryContainer, borderRadius: BorderRadius.circular(100)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.local_shipping, size: 14, color: AppTheme.onSecondaryContainer),
+                        const SizedBox(width: 4),
+                        Text(order.status, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSecondaryContainer)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (order.paymentMethod != 'Bayar di Tempat (COD)')
+                    Text(
+                      order.paymentStatus == 'success' ? 'LUNAS' : 'BELUM BAYAR',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: order.paymentStatus == 'success' ? Colors.green : Colors.red,
+                      ),
+                    ),
+                ],
               ),
             ],
           ),
@@ -190,10 +207,39 @@ class OrdersScreen extends ConsumerWidget {
           ],
           const Divider(),
           const SizedBox(height: 16),
-          _timelineItem(context, Icons.receipt_long, 'Pesanan Diproses', DateFormat('hh:mm a').format(order.createdAt), true, true),
-          _timelineItem(context, Icons.content_cut, 'Pesanan di konfirmasi', 'Pesanan sedang disiapkan', isConfirmed, true),
-          _timelineItem(context, Icons.local_shipping, 'Pesanan sedang di dalam perjalanan', 'Kurir menuju lokasi Anda', inTransit, true, isCurrent: inTransit),
-          _timelineItem(context, Icons.home, 'Sampai Tujuan', 'Pesanan selesai', isDone, false),
+          _timelineItem(context, Icons.payments, 'Pembayaran', isPaid ? 'Pembayaran Berhasil' : 'Menunggu Pembayaran', isPaid, true, isCurrent: !isPaid),
+          _timelineItem(context, Icons.receipt_long, 'Konfirmasi', isConfirmed ? 'Pesanan Dikonfirmasi' : 'Menunggu Konfirmasi Seller', isConfirmed, true, isCurrent: isPaid && !isConfirmed),
+          _timelineItem(context, Icons.local_shipping, 'Pengiriman', inTransit ? 'Dalam Perjalanan' : 'Pesanan Sedang Dipacking', inTransit, true, isCurrent: isConfirmed && !inTransit),
+          _timelineItem(context, Icons.home, 'Selesai', 'Pesanan Sampai Tujuan', isDone, false, isCurrent: inTransit && !isDone),
+          if (!isPaid && order.paymentMethod != 'Bayar di Tempat (COD)') ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () async {
+                   try {
+                     final status = await ref.read(midtransServiceProvider).checkTransactionStatus(order.id);
+                     final transactionStatus = status['transaction_status'];
+                     if (transactionStatus == 'settlement' || transactionStatus == 'capture') {
+                       await ref.read(orderRepositoryProvider).updateOrder(order.id, {'paymentStatus': 'success', 'status': 'Dalam Proses Packing'});
+                       if (context.mounted) {
+                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pembayaran berhasil dikonfirmasi!'), backgroundColor: Colors.green));
+                       }
+                     } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status Pembayaran: $transactionStatus')));
+                        }
+                     }
+                   } catch (e) {
+                     if (context.mounted) {
+                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengecek status: $e'), backgroundColor: AppTheme.error));
+                     }
+                   }
+                },
+                child: const Text('Cek Status Pembayaran'),
+              ),
+            ),
+          ],
         ],
       ),
     );
