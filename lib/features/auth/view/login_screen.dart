@@ -65,16 +65,7 @@ class LoginScreen extends HookConsumerWidget {
     }
 
     void handleForgotPassword() {
-      if (emailController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Masukkan email terlebih dahulu untuk reset password')),
-        );
-        return;
-      }
-      ref.read(authControllerProvider.notifier).resetPassword(emailController.text.trim());
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email reset password telah dikirim ke ${emailController.text}')),
-      );
+      context.push('/forgot-password');
     }
 
     return Scaffold(

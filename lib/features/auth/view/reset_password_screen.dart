@@ -33,9 +33,11 @@ class ResetPasswordScreen extends HookConsumerWidget {
       isLoading.value = true;
       try {
         await ref.read(authRepositoryProvider).updatePassword(passwordController.text);
+        // Sign out to force user to login with new password
+        await ref.read(authRepositoryProvider).signOut();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password berhasil diperbarui!'), backgroundColor: Colors.green),
+            const SnackBar(content: Text('Password berhasil diperbarui! Silakan masuk kembali.'), backgroundColor: Colors.green),
           );
           context.go('/login');
         }

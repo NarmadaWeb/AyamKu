@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/view/login_screen.dart';
 import '../../features/auth/view/seller_login_screen.dart';
+import '../../features/auth/view/forgot_password_screen.dart';
 import '../../features/auth/view/reset_password_screen.dart';
 import '../../features/home/view/home_screen.dart';
 import '../../features/home/view/splash_screen.dart';
@@ -76,6 +77,10 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const SellerLoginScreen(),
       ),
       GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
         path: '/reset-password',
         builder: (context, state) => const ResetPasswordScreen(),
       ),
@@ -114,8 +119,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/payment',
         builder: (context, state) {
-          final url = state.extra as String;
-          return PaymentWebViewScreen(url: url);
+          final extra = state.extra as Map<String, dynamic>;
+          final url = extra['url'] as String;
+          final orderId = extra['orderId'] as String;
+          return PaymentWebViewScreen(url: url, orderId: orderId);
         },
       ),
       GoRoute(

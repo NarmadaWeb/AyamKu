@@ -11,7 +11,6 @@ import '../../auth/model/user_model.dart';
 import '../repository/cart_repository.dart';
 import 'package:intl/intl.dart';
 import '../../orders/repository/midtrans_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class CheckoutScreen extends HookConsumerWidget {
   const CheckoutScreen({super.key});
@@ -434,7 +433,10 @@ class CheckoutScreen extends HookConsumerWidget {
 
                     if (context.mounted) {
                       Navigator.pop(context); // Close processing dialog
-                      context.push('/payment', extra: redirectUrl);
+                      context.push('/payment', extra: {
+                        'url': redirectUrl,
+                        'orderId': orderId,
+                      });
                     }
                   } else {
                     await ref.read(cartRepositoryProvider).clearCart();

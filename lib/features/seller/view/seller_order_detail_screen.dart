@@ -141,7 +141,23 @@ class SellerOrderDetailScreen extends HookConsumerWidget {
 
     useEffect(() {
       controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      controller.loadRequest(Uri.parse(mapUrl));
+      // Load Google Maps as an iframe to satisfy Embed API requirements in WebView
+      final html = '''
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { margin: 0; padding: 0; }
+              iframe { width: 100vw; height: 100vh; border: 0; }
+            </style>
+          </head>
+          <body>
+            <iframe src="$mapUrl" allowfullscreen></iframe>
+          </body>
+        </html>
+      ''';
+      controller.loadHtmlString(html);
       return null;
     }, [order.latitude, order.longitude]);
 

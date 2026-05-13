@@ -31,7 +31,7 @@ class NotificationListenerWidget extends ConsumerWidget {
         final notifications = next.value!;
         for (var notification in notifications) {
           if (!notification.isRead &&
-              notification.createdAt.isAfter(DateTime.now().subtract(const Duration(seconds: 10)))) {
+              notification.createdAt.isAfter(DateTime.now().subtract(const Duration(minutes: 1)))) {
             NotificationService.showNotification(
               id: notification.id.hashCode,
               title: notification.title,

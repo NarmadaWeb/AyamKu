@@ -7,7 +7,8 @@ import '../repository/order_repository.dart';
 
 class PaymentWebViewScreen extends ConsumerStatefulWidget {
   final String url;
-  const PaymentWebViewScreen({super.key, required this.url});
+  final String orderId;
+  const PaymentWebViewScreen({super.key, required this.url, required this.orderId});
 
   @override
   ConsumerState<PaymentWebViewScreen> createState() => _PaymentWebViewScreenState();
@@ -56,14 +57,7 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
     if (mounted) {
       // Update order status in Supabase if URL indicates success
       try {
-        // Extract original order ID from Midtrans order ID (orderId_timestamp)
-        // Midtrans Order IDs used in this app are in format: {orderId}_{timestamp}
-        // Let's find the original orderId in the database using midtransOrderId
-
-        final allOrders = await ref.read(orderRepositoryProvider).getAllOrders().first;
-        final order = allOrders.firstWhere((o) => widget.url.contains(o.midtransOrderId ?? ''));
-
-        await ref.read(orderRepositoryProvider).updateOrder(order.id, {
+        await ref.read(orderRepositoryProvider).updateOrder(widget.orderId, {
           'paymentStatus': 'success',
           'status': 'Dalam Proses Packing',
         });
