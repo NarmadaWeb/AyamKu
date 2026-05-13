@@ -1,0 +1,143 @@
+<mxfile host="65bd71144e">
+    <diagram id="user-checkout-swimlane" name="Checkout & Pembayaran User">
+        <mxGraphModel dx="1200" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="pool" value="Activity Checkout &amp; Pembayaran" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=40;horizontal=1;horizontalStack=1;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="40" width="760" height="1000" as="geometry"/>
+                </mxCell>
+                <mxCell id="lane_user" value="User (Buyer)" style="swimlane;startSize=40;" vertex="1" parent="pool">
+                    <mxGeometry x="0" y="40" width="380" height="960" as="geometry"/>
+                </mxCell>
+                <mxCell id="start" value="" style="ellipse;fillColor=#000000;strokeColor=none;" vertex="1" parent="lane_user">
+                    <mxGeometry x="175" y="30" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="act1" value="Klik Checkout di Keranjang" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="90" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act3" value="Pilih Alamat &amp; Metode Bayar" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="220" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act4" value="Klik Buat Pesanan" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="310" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="dec_metode" value="Metode?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="150" y="420" width="80" height="80" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="bayar_midtrans" value="Bayar via Midtrans" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="240" y="520" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="upload_bukti" value="Upload Bukti Transfer" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="30" y="520" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="act_finish" value="Lihat Status Pesanan" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_user">
+                    <mxGeometry x="130" y="850" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="end" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="lane_user">
+                    <mxGeometry x="175" y="920" width="30" height="30" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="lane_sistem" value="Sistem" style="swimlane;startSize=40;" vertex="1" parent="pool">
+                    <mxGeometry x="380" y="40" width="380" height="960" as="geometry"/>
+                </mxCell>
+                <mxCell id="act2" value="Tampil Ringkasan Order" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="130" y="150" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act5" value="Simpan Order 'Pending' di DB" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="130" y="380" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="act6_midtrans" value="Generate Snap Token &amp; WebView" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="130" y="580" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="act6_transfer" value="Simpan Bukti ke Storage" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="130" y="660" width="120" height="40" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="fork1" value="" style="line;strokeWidth=6;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="100" y="740" width="180" height="10" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_update" value="Update Status DB" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="50" y="780" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_stok" value="Kurangi Stok Produk" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="220" y="780" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="join1" value="" style="line;strokeWidth=6;html=1;" vertex="1" parent="lane_sistem">
+                    <mxGeometry x="100" y="840" width="180" height="10" as="geometry"/>
+                </mxCell>
+
+                <!-- Edges -->
+                <mxCell id="e1" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="start" target="act1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act1" target="act2">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="600" y="150"/></Array></mxGeometry>
+                </mxCell>
+                <mxCell id="e3" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="act2" target="act3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act3" target="act4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="act4" target="act5">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act5" target="dec_metode">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="400"/></Array></mxGeometry>
+                </mxCell>
+
+                <mxCell id="e7" value="Midtrans" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec_metode" target="bayar_midtrans">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="340" y="460"/></Array></mxGeometry>
+                </mxCell>
+                <mxCell id="e8" value="Transfer" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec_metode" target="upload_bukti">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="130" y="460"/></Array></mxGeometry>
+                </mxCell>
+                <mxCell id="e9" value="COD" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="dec_metode" target="fork1">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="720"/><mxPoint x="570" y="720"/></Array></mxGeometry>
+                </mxCell>
+
+                <mxCell id="e10" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="bayar_midtrans" target="act6_midtrans">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="340" y="580"/><mxPoint x="600" y="580"/></Array></mxGeometry>
+                </mxCell>
+                <mxCell id="e11" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="upload_bukti" target="act6_transfer">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="130" y="660"/><mxPoint x="600" y="660"/></Array></mxGeometry>
+                </mxCell>
+
+                <mxCell id="e12" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act6_midtrans" target="fork1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act6_transfer" target="fork1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="e14" style="endArrow=classic;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="fork1" target="act_update">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e15" style="endArrow=classic;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="fork1" target="act_stok">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e16" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act_update" target="join1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e17" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act_stok" target="join1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="e18" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="join1" target="act_finish">
+                    <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="570" y="870"/></Array></mxGeometry>
+                </mxCell>
+                <mxCell id="e19" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="act_finish" target="end">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
