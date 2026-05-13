@@ -114,8 +114,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/payment',
         builder: (context, state) {
-          final url = state.extra as String;
-          return PaymentWebViewScreen(url: url);
+          final extra = state.extra as Map<String, dynamic>;
+          final url = extra['url'] as String;
+          final orderId = extra['orderId'] as String;
+          return PaymentWebViewScreen(url: url, orderId: orderId);
         },
       ),
       GoRoute(

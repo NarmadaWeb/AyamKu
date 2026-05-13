@@ -221,7 +221,8 @@ class OrdersScreen extends ConsumerWidget {
               child: OutlinedButton(
                 onPressed: () async {
                    try {
-                     final status = await ref.read(midtransServiceProvider).checkTransactionStatus(order.id);
+                     final midtransId = order.midtransOrderId ?? order.id;
+                     final status = await ref.read(midtransServiceProvider).checkTransactionStatus(midtransId);
                      final transactionStatus = status['transaction_status'];
                      if (transactionStatus == 'settlement' || transactionStatus == 'capture') {
                        await ref.read(orderRepositoryProvider).updateOrder(order.id, {'paymentStatus': 'success', 'status': 'Dalam Proses Packing'});
@@ -230,7 +231,7 @@ class OrdersScreen extends ConsumerWidget {
                        }
                      } else {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status Pembayaran: $transactionStatus')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status Pembayaran: ${transactionStatus ?? 'Null'}')));
                         }
                      }
                    } catch (e) {

@@ -110,8 +110,8 @@ class AuthRepository {
       if (extension == '.webp') contentType = 'image/webp';
       if (extension == '.gif') contentType = 'image/gif';
 
-      final fileName = '$uid-${DateTime.now().millisecondsSinceEpoch}$extension';
-      final path = 'profile_images/$fileName';
+      final fileName = '$uid$extension';
+      final path = fileName;
 
       await _supabase.storage.from('avatars').upload(
         path,
@@ -120,7 +120,20 @@ class AuthRepository {
           upsert: true,
           contentType: contentType,
         ),
-      );
+      ).catchError((e) async {
+        // If upload fails, try to update if it exists (though upsert: true should handle this)
+        if (e.toString().contains('already exists')) {
+           return await _supabase.storage.from('avatars').update(
+            path,
+            file,
+            fileOptions: FileOptions(
+              upsert: true,
+              contentType: contentType,
+            ),
+          );
+        }
+        throw e;
+      });
 
       // Get public URL
       return _supabase.storage.from('avatars').getPublicUrl(path);
