@@ -151,9 +151,19 @@ class ProfileScreen extends HookConsumerWidget {
               onTap: () async {
                 Navigator.pop(context);
                 final picker = ImagePicker();
-                final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-                if (image != null) {
-                  _uploadImage(context, ref, userData.uid, File(image.path));
+                try {
+                  final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                  if (image != null) {
+                    if (context.mounted) {
+                      _uploadImage(context, ref, userData.uid, File(image.path));
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Gagal memilih gambar: $e'), backgroundColor: AppTheme.error),
+                    );
+                  }
                 }
               },
             ),
@@ -163,9 +173,19 @@ class ProfileScreen extends HookConsumerWidget {
               onTap: () async {
                 Navigator.pop(context);
                 final picker = ImagePicker();
-                final image = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
-                if (image != null) {
-                  _uploadImage(context, ref, userData.uid, File(image.path));
+                try {
+                  final image = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                  if (image != null) {
+                    if (context.mounted) {
+                      _uploadImage(context, ref, userData.uid, File(image.path));
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Gagal mengambil foto: $e'), backgroundColor: AppTheme.error),
+                    );
+                  }
                 }
               },
             ),

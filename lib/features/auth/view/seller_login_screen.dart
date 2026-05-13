@@ -11,11 +11,15 @@ class SellerLoginScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(authControllerProvider, (previous, next) {
       if (next is AsyncError) {
+        String message = next.error.toString();
+        if (message.contains('Invalid login credentials')) {
+          message = 'Email atau password salah';
+        }
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Login Gagal'),
-            content: Text(next.error.toString()),
+            content: Text(message),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -24,6 +28,17 @@ class SellerLoginScreen extends HookConsumerWidget {
             ],
           ),
         );
+      }
+    });
+
+    ref.listen(currentUserDataProvider, (previous, next) {
+      if (next is AsyncData && next.value != null) {
+        if (next.value!.role != 'seller') {
+          ref.read(authControllerProvider.notifier).signOut();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Akun ini tidak memiliki hak akses sebagai Seller'), backgroundColor: AppTheme.error),
+          );
+        }
       }
     });
 
@@ -37,14 +52,6 @@ class SellerLoginScreen extends HookConsumerWidget {
       if (formKey.currentState!.validate()) {
         final email = emailController.text.trim();
         final password = passwordController.text.trim();
-
-        // Check if the email is the authorized seller email
-        if (email != 'indra020204@gmail.com') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email ini tidak terdaftar sebagai Seller'), backgroundColor: AppTheme.error),
-          );
-          return;
-        }
 
         ref.read(authControllerProvider.notifier).signInWithEmailAndPassword(
               email,

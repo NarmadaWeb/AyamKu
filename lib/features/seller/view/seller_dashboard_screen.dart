@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../orders/repository/order_repository.dart';
@@ -217,6 +220,15 @@ class SellerDashboardScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           Text('Total: ${currencyFormat.format(order.totalPrice)}', style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
+          if (order.paymentProofUrl != null && order.paymentProofUrl!.isNotEmpty) ...[
+            OutlinedButton.icon(
+              onPressed: () => _showPaymentProofDialog(context, order.paymentProofUrl!),
+              icon: const Icon(Icons.receipt_long),
+              label: const Text('Lihat Bukti Pembayaran'),
+              style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primary),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (nextStatus.isNotEmpty)
             SizedBox(
               width: double.infinity,
@@ -230,59 +242,145 @@ class SellerDashboardScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddProductDialog(BuildContext context, WidgetRef ref, {ProductModel? product}) {
-    final nameController = TextEditingController(text: product?.name);
-    final priceController = TextEditingController(text: product?.price.toString());
-    final descController = TextEditingController(text: product?.description);
-    final weightController = TextEditingController(text: product?.weight);
-    final imageController = TextEditingController(text: product?.imageUrl);
-    final unitController = TextEditingController(text: product?.unit ?? '/pack');
-    final categoryController = TextEditingController(text: product?.category ?? 'Ayam');
-
+  void _showPaymentProofDialog(BuildContext context, String url) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(product == null ? 'Tambah Produk' : 'Edit Produk'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
-              TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
-              TextField(controller: weightController, decoration: const InputDecoration(labelText: 'Berat (misal: 500g)')),
-              TextField(controller: unitController, decoration: const InputDecoration(labelText: 'Unit (misal: /pack)')),
-              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Kategori')),
-              TextField(controller: descController, decoration: const InputDecoration(labelText: 'Deskripsi')),
-              TextField(controller: imageController, decoration: const InputDecoration(labelText: 'URL Gambar')),
-            ],
-          ),
+      builder: (context) => Dialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppBar(
+              title: const Text('Bukti Pembayaran'),
+              leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Image.network(url, fit: BoxFit.contain),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () {
-              final newProduct = ProductModel(
-                id: product?.id ?? '',
-                name: nameController.text,
-                price: double.parse(priceController.text),
-                description: descController.text,
-                weight: weightController.text,
-                imageUrl: imageController.text,
-                unit: unitController.text,
-                category: categoryController.text,
-                isAvailable: true,
-              );
-              if (product == null) {
-                ref.read(productRepositoryProvider).addProduct(newProduct);
-              } else {
-                ref.read(productRepositoryProvider).updateProduct(newProduct);
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
       ),
+    );
+  }
+
+  void _showAddProductDialog(BuildContext context, WidgetRef ref, {ProductModel? product}) {
+    showDialog(
+      context: context,
+      builder: (context) => _ProductFormDialog(product: product),
+    );
+  }
+}
+
+class _ProductFormDialog extends HookConsumerWidget {
+  final ProductModel? product;
+  const _ProductFormDialog({this.product});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nameController = useTextEditingController(text: product?.name);
+    final priceController = useTextEditingController(text: product?.price.toString());
+    final descController = useTextEditingController(text: product?.description);
+    final weightController = useTextEditingController(text: product?.weight);
+    final unitController = useTextEditingController(text: product?.unit ?? '/pack');
+    final categoryController = useTextEditingController(text: product?.category ?? 'Ayam');
+    final imageUrl = useState(product?.imageUrl ?? '');
+    final isUploading = useState(false);
+
+    Future<void> pickImage() async {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      if (image != null) {
+        isUploading.value = true;
+        try {
+          final url = await ref.read(productRepositoryProvider).uploadProductImage(File(image.path));
+          imageUrl.value = url;
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Gagal upload gambar: $e'), backgroundColor: AppTheme.error),
+            );
+          }
+        } finally {
+          isUploading.value = false;
+        }
+      }
+    }
+
+    return AlertDialog(
+      title: Text(product == null ? 'Tambah Produk' : 'Edit Produk'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: isUploading.value ? null : pickImage,
+              child: Container(
+                height: 150,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(8),
+                  image: imageUrl.value.isNotEmpty
+                      ? DecorationImage(image: NetworkImage(imageUrl.value), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: isUploading.value
+                    ? const Center(child: CircularProgressIndicator())
+                    : imageUrl.value.isEmpty
+                        ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_a_photo, size: 40, color: AppTheme.onSurfaceVariant),
+                              SizedBox(height: 8),
+                              Text('Upload Gambar Produk'),
+                            ],
+                          )
+                        : null,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nama Produk')),
+            TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Harga'), keyboardType: TextInputType.number),
+            TextField(controller: weightController, decoration: const InputDecoration(labelText: 'Berat (misal: 500g)')),
+            TextField(controller: unitController, decoration: const InputDecoration(labelText: 'Unit (misal: /pack)')),
+            TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Kategori')),
+            TextField(controller: descController, decoration: const InputDecoration(labelText: 'Deskripsi')),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+        ElevatedButton(
+          onPressed: isUploading.value ? null : () {
+            if (imageUrl.value.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Silakan upload gambar produk terlebih dahulu')),
+              );
+              return;
+            }
+            final newProduct = ProductModel(
+              id: product?.id ?? '',
+              name: nameController.text,
+              price: double.tryParse(priceController.text) ?? 0.0,
+              description: descController.text,
+              weight: weightController.text,
+              imageUrl: imageUrl.value,
+              unit: unitController.text,
+              category: categoryController.text,
+              isAvailable: true,
+            );
+            if (product == null) {
+              ref.read(productRepositoryProvider).addProduct(newProduct);
+            } else {
+              ref.read(productRepositoryProvider).updateProduct(newProduct);
+            }
+            Navigator.pop(context);
+          },
+          child: const Text('Simpan'),
+        ),
+      ],
     );
   }
 }

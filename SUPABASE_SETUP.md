@@ -58,7 +58,8 @@ CREATE TABLE public.orders (
   items JSONB,
   "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "deliveryTimeSlot" TEXT,
-  "paymentMethod" TEXT
+  "paymentMethod" TEXT,
+  "paymentProofUrl" TEXT
 );
 
 -- Tabel Notifications
@@ -86,6 +87,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 1. Buka menu **Storage** di Dashboard Supabase.
 2. Buat bucket baru bernama `avatars` dan set sebagai **Public**.
 3. Buat bucket baru bernama `product_images` dan set sebagai **Public**.
+4. Buat bucket baru bernama `orders` dan set sebagai **Public**.
 
 ## 3. Konfigurasi RLS (Row Level Security)
 
@@ -101,8 +103,10 @@ Jalankan SQL ini untuk memberikan akses upload:
 
 ```sql
 -- Kebijakan untuk bucket 'avatars'
+-- Catatan: SELECT policy untuk public bucket sebaiknya tidak dibuat secara luas agar tidak bisa 'listing' file (Keamanan).
+-- Public URL tetap bisa diakses meskipun SELECT policy dihapus jika bucket diset sebagai Public.
+
 DROP POLICY IF EXISTS "Public Access Avatars" ON storage.objects;
-CREATE POLICY "Public Access Avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
 
 DROP POLICY IF EXISTS "Authenticated Upload Avatars" ON storage.objects;
 CREATE POLICY "Authenticated Upload Avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
@@ -112,11 +116,26 @@ CREATE POLICY "Authenticated Update Avatars" ON storage.objects FOR UPDATE USING
 
 -- Kebijakan untuk bucket 'product_images'
 DROP POLICY IF EXISTS "Public Access Products" ON storage.objects;
-CREATE POLICY "Public Access Products" ON storage.objects FOR SELECT USING (bucket_id = 'product_images');
 
 DROP POLICY IF EXISTS "Authenticated Upload Products" ON storage.objects;
 CREATE POLICY "Authenticated Upload Products" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product_images' AND auth.role() = 'authenticated');
 
 DROP POLICY IF EXISTS "Authenticated Update Products" ON storage.objects;
 CREATE POLICY "Authenticated Update Products" ON storage.objects FOR UPDATE USING (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+
+-- Kebijakan untuk bucket 'orders' (Bukti Pembayaran)
+DROP POLICY IF EXISTS "Public Access Orders" ON storage.objects;
+
+DROP POLICY IF EXISTS "Authenticated Upload Orders" ON storage.objects;
+CREATE POLICY "Authenticated Upload Orders" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'orders' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated Update Orders" ON storage.objects;
+CREATE POLICY "Authenticated Update Orders" ON storage.objects FOR UPDATE USING (bucket_id = 'orders' AND auth.role() = 'authenticated');
 ```
+
+## 4. Keamanan Autentikasi
+
+Untuk meningkatkan keamanan akun pengguna, sangat disarankan untuk mengaktifkan fitur **"Leaked Password Protection"** di Dashboard Supabase:
+1. Pergi ke **Authentication** > **Settings**.
+2. Cari bagian **Password Protection**.
+3. Aktifkan **"Prevent use of leaked passwords"**.

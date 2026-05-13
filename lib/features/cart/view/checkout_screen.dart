@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import '../model/cart_item_model.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../orders/repository/order_repository.dart';
@@ -50,6 +51,8 @@ class CheckoutScreen extends HookConsumerWidget {
                       _buildDeliveryTime(context, selectedTimeSlot),
                       const SizedBox(height: 16),
                       _buildPaymentMethod(context, selectedPaymentMethod),
+                      const SizedBox(height: 16),
+                      _buildOrderItems(context, items, currencyFormat),
                       const SizedBox(height: 16),
                       _buildOrderSummary(context, subtotal, shipping, serviceFee, total, currencyFormat),
                     ],
@@ -238,6 +241,48 @@ class CheckoutScreen extends HookConsumerWidget {
     );
   }
 
+  Widget _buildOrderItems(BuildContext context, List<CartItemModel> items, NumberFormat currencyFormat) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.surfaceContainerHighest)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.shopping_bag, color: AppTheme.primary),
+              const SizedBox(width: 8),
+              Text('Daftar Produk', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 18)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...items.map((item) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Image.network(item.imageUrl, width: 40, height: 40, fit: BoxFit.cover),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.name, style: Theme.of(context).textTheme.labelLarge),
+                      Text('${item.quantity}x • ${item.weight}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                Text(currencyFormat.format(item.price * item.quantity), style: Theme.of(context).textTheme.labelLarge),
+              ],
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
   Widget _buildOrderSummary(BuildContext context, double subtotal, double shipping, double serviceFee, double total, NumberFormat currencyFormat) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -283,7 +328,7 @@ class CheckoutScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, WidgetRef ref, UserModel? userData, List<dynamic> items, double total, String timeSlot, String payment, NumberFormat currencyFormat) {
+  Widget _buildBottomBar(BuildContext context, WidgetRef ref, UserModel? userData, List<CartItemModel> items, double total, String timeSlot, String payment, NumberFormat currencyFormat) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
