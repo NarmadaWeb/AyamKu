@@ -24,14 +24,23 @@ part 'router.g.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen(authControllerProvider, (_, __) => notifyListeners());
+    _ref.listen(currentUserDataProvider, (_, __) => notifyListeners());
+  }
+}
+
 @riverpod
 GoRouter appRouter(Ref ref) {
-  final authState = ref.watch(authControllerProvider);
-  final userDataAsync = ref.watch(currentUserDataProvider);
+  final notifier = RouterNotifier(ref);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
+    refreshListenable: notifier,
     routes: [
       GoRoute(
         path: '/splash',
@@ -99,6 +108,9 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
     redirect: (context, state) {
+      final authState = ref.read(authControllerProvider);
+      final userDataAsync = ref.read(currentUserDataProvider);
+
       if (authState.isLoading || authState.hasError) return null;
 
       final isAuth = authState.value != null;
