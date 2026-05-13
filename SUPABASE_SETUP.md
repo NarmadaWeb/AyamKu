@@ -93,69 +93,153 @@ ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 3. Buat bucket baru bernama `product_images` dan set sebagai **Public**.
 4. Buat bucket baru bernama `orders` dan set sebagai **Public**.
 
-## 3. Konfigurasi RLS (Row Level Security) & Triggers
+## 3. Konfigurasi Row Level Security (RLS)
 
-### Tabel Users
-- `Allow select/update for users based on their uid`
-- `Allow insert for authenticated users`:
-  ```sql
-  CREATE POLICY "Allow insert for authenticated users" ON public.users FOR INSERT WITH CHECK (auth.uid() = uid);
-  ```
-
-### Tabel Products
-- `Allow select for everyone`
-- `Allow insert/update/delete for sellers only`
-
-### Storage Policies (avatars & product_images)
-Jalankan SQL ini untuk memberikan akses upload:
+Aktifkan RLS pada semua tabel dan buat kebijakan (policies) sesuai kebutuhan.
 
 ```sql
--- Kebijakan untuk bucket 'avatars'
--- Catatan: SELECT policy untuk public bucket sebaiknya tidak dibuat secara luas agar tidak bisa 'listing' file (Keamanan).
--- Public URL tetap bisa diakses meskipun SELECT policy dihapus jika bucket diset sebagai Public.
+-- Aktifkan RLS
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cart ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Public Access Avatars" ON storage.objects;
+-- ==================== POLICIES untuk users ====================
+-- Setiap user hanya bisa melihat dan mengupdate data dirinya sendiri
+-- Insert diizinkan hanya jika uid sesuai dengan user yang login (biasanya untuk signup via trigger)
+CREATE POLICY "Users can view own data" ON public.users
+  FOR SELECT USING (auth.uid() = uid);
 
-DROP POLICY IF EXISTS "Authenticated Upload Avatars" ON storage.objects;
-CREATE POLICY "Authenticated Upload Avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+CREATE POLICY "Users can update own data" ON public.users
+  FOR UPDATE USING (auth.uid() = uid) WITH CHECK (auth.uid() = uid);
 
-DROP POLICY IF EXISTS "Authenticated Update Avatars" ON storage.objects;
-CREATE POLICY "Authenticated Update Avatars" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+CREATE POLICY "Allow insert for authenticated users" ON public.users
+  FOR INSERT WITH CHECK (auth.uid() = uid);
 
--- Kebijakan untuk bucket 'product_images'
-DROP POLICY IF EXISTS "Public Access Products" ON storage.objects;
+-- ==================== POLICIES untuk products ====================
+-- Semua orang (tanpa login) bisa melihat produk
+CREATE POLICY "Anyone can view products" ON public.products
+  FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Authenticated Upload Products" ON storage.objects;
-CREATE POLICY "Authenticated Upload Products" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+-- Hanya user dengan role 'seller' atau 'admin' yang bisa menambah, mengubah, menghapus produk
+CREATE POLICY "Sellers and admins can insert products" ON public.products
+  FOR INSERT WITH CHECK (
+    auth.uid() IN (SELECT uid FROM public.users WHERE role IN ('seller', 'admin'))
+  );
 
-DROP POLICY IF EXISTS "Authenticated Update Products" ON storage.objects;
-CREATE POLICY "Authenticated Update Products" ON storage.objects FOR UPDATE USING (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+CREATE POLICY "Sellers and admins can update products" ON public.products
+  FOR UPDATE USING (
+    auth.uid() IN (SELECT uid FROM public.users WHERE role IN ('seller', 'admin'))
+  ) WITH CHECK (
+    auth.uid() IN (SELECT uid FROM public.users WHERE role IN ('seller', 'admin'))
+  );
 
--- Kebijakan untuk bucket 'orders' (Bukti Pembayaran)
-DROP POLICY IF EXISTS "Public Access Orders" ON storage.objects;
+CREATE POLICY "Sellers and admins can delete products" ON public.products
+  FOR DELETE USING (
+    auth.uid() IN (SELECT uid FROM public.users WHERE role IN ('seller', 'admin'))
+  );
 
-DROP POLICY IF EXISTS "Authenticated Upload Orders" ON storage.objects;
-CREATE POLICY "Authenticated Upload Orders" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'orders' AND auth.role() = 'authenticated');
+-- ==================== POLICIES untuk cart ====================
+-- User hanya bisa melihat, menambah, mengubah, menghapus item cart miliknya sendiri
+CREATE POLICY "Users can view own cart" ON public.cart
+  FOR SELECT USING (auth.uid() = "userId");
 
-DROP POLICY IF EXISTS "Authenticated Update Orders" ON storage.objects;
-CREATE POLICY "Authenticated Update Orders" ON storage.objects FOR UPDATE USING (bucket_id = 'orders' AND auth.role() = 'authenticated');
+CREATE POLICY "Users can insert own cart" ON public.cart
+  FOR INSERT WITH CHECK (auth.uid() = "userId");
+
+CREATE POLICY "Users can update own cart" ON public.cart
+  FOR UPDATE USING (auth.uid() = "userId") WITH CHECK (auth.uid() = "userId");
+
+CREATE POLICY "Users can delete own cart" ON public.cart
+  FOR DELETE USING (auth.uid() = "userId");
+
+-- ==================== POLICIES untuk orders ====================
+-- User bisa melihat pesanan mereka sendiri
+CREATE POLICY "Users can view own orders" ON public.orders
+  FOR SELECT USING (auth.uid() = "userId");
+
+-- User bisa membuat pesanan baru (userId harus sesuai)
+CREATE POLICY "Users can insert own orders" ON public.orders
+  FOR INSERT WITH CHECK (auth.uid() = "userId");
+
+-- User bisa mengupdate pesanan mereka sendiri (misal: upload bukti bayar)
+-- Batasi hanya kolom tertentu jika perlu, di sini diizinkan semua kolom
+CREATE POLICY "Users can update own orders" ON public.orders
+  FOR UPDATE USING (auth.uid() = "userId") WITH CHECK (auth.uid() = "userId");
+
+-- (Opsional) Admin/seller bisa melihat semua pesanan
+CREATE POLICY "Admins can view all orders" ON public.orders
+  FOR SELECT USING (
+    auth.uid() IN (SELECT uid FROM public.users WHERE role = 'admin')
+  );
+
+-- ==================== POLICIES untuk notifications ====================
+-- User hanya bisa melihat notifikasi mereka sendiri
+CREATE POLICY "Users can view own notifications" ON public.notifications
+  FOR SELECT USING (auth.uid() = "userId");
+
+-- User bisa mengupdate notifikasi sendiri (misal: menandai sudah dibaca)
+CREATE POLICY "Users can update own notifications" ON public.notifications
+  FOR UPDATE USING (auth.uid() = "userId") WITH CHECK (auth.uid() = "userId");
+
+-- Insert notifikasi biasanya dilakukan oleh sistem atau admin, maka izinkan dari role tertentu
+CREATE POLICY "System or admin can insert notifications" ON public.notifications
+  FOR INSERT WITH CHECK (
+    auth.uid() IS NULL OR -- untuk sistem (trigger)
+    auth.uid() IN (SELECT uid FROM public.users WHERE role = 'admin')
+  );
 ```
 
-## 4. Keamanan Autentikasi
+## 4. Kebijakan Storage (Buckets)
+
+Jalankan SQL berikut untuk memberikan akses upload file ke bucket yang sudah dibuat.  
+> **Catatan:** Policy `SELECT` sengaja tidak dibuat agar tidak bisa melakukan listing file, namun file tetap dapat diakses via public URL karena bucket diset sebagai **Public**.
+
+```sql
+-- ==================== Bucket 'avatars' ====================
+DROP POLICY IF EXISTS "Authenticated Upload Avatars" ON storage.objects;
+CREATE POLICY "Authenticated Upload Avatars" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated Update Avatars" ON storage.objects;
+CREATE POLICY "Authenticated Update Avatars" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+
+-- ==================== Bucket 'product_images' ====================
+DROP POLICY IF EXISTS "Authenticated Upload Products" ON storage.objects;
+CREATE POLICY "Authenticated Upload Products" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated Update Products" ON storage.objects;
+CREATE POLICY "Authenticated Update Products" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'product_images' AND auth.role() = 'authenticated');
+
+-- ==================== Bucket 'orders' (Bukti Pembayaran) ====================
+DROP POLICY IF EXISTS "Authenticated Upload Orders" ON storage.objects;
+CREATE POLICY "Authenticated Upload Orders" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'orders' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated Update Orders" ON storage.objects;
+CREATE POLICY "Authenticated Update Orders" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'orders' AND auth.role() = 'authenticated');
+```
+
+## 5. Keamanan Autentikasi
 
 Untuk meningkatkan keamanan akun pengguna, sangat disarankan untuk mengaktifkan fitur **"Leaked Password Protection"** di Dashboard Supabase:
 1. Pergi ke **Authentication** > **Settings**.
 2. Cari bagian **Password Protection**.
 3. Aktifkan **"Prevent use of leaked passwords"**.
 
-## 5. Sinkronisasi User (Opsional tapi Sangat Disarankan)
+## 6. Sinkronisasi User (Otomatis)
 
 Gunakan trigger PostgreSQL untuk secara otomatis membuat data di `public.users` saat user baru mendaftar di `auth.users`. Ini lebih handal daripada menyimpannya dari sisi client.
 
 Jalankan SQL berikut:
 
 ```sql
--- Fungsi untuk menghandle user baru
+-- Fungsi untuk menangani user baru
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
