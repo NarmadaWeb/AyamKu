@@ -54,7 +54,7 @@ class CheckoutScreen extends HookConsumerWidget {
                       const SizedBox(height: 16),
                       _buildPaymentMethod(context, selectedPaymentMethod),
                       const SizedBox(height: 16),
-                      _buildOrderItems(context, items, currencyFormat),
+                      _buildOrderItems(context, ref, items, currencyFormat),
                       const SizedBox(height: 16),
                       _buildOrderSummary(context, subtotal, shipping, serviceFee, total, currencyFormat),
                     ],
@@ -243,7 +243,7 @@ class CheckoutScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildOrderItems(BuildContext context, List<CartItemModel> items, NumberFormat currencyFormat) {
+  Widget _buildOrderItems(BuildContext context, WidgetRef ref, List<CartItemModel> items, NumberFormat currencyFormat) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.surfaceContainerHighest)),
@@ -276,7 +276,19 @@ class CheckoutScreen extends HookConsumerWidget {
                     ],
                   ),
                 ),
-                Text(currencyFormat.format(item.price * item.quantity), style: Theme.of(context).textTheme.labelLarge),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(currencyFormat.format(item.price * item.quantity), style: Theme.of(context).textTheme.labelLarge),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: AppTheme.error, size: 18),
+                      onPressed: () => ref.read(cartRepositoryProvider).removeFromCart(item.id),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
               ],
             ),
           )),
@@ -389,6 +401,8 @@ class CheckoutScreen extends HookConsumerWidget {
                     deliveryTimeSlot: timeSlot,
                     paymentMethod: payment,
                     paymentStatus: 'pending',
+                    latitude: userData.latitude,
+                    longitude: userData.longitude,
                   );
 
                   final orderId = await ref.read(orderRepositoryProvider).createOrder(initialOrder);

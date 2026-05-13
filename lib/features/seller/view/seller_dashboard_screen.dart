@@ -219,8 +219,11 @@ class SellerDashboardScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       color: AppTheme.surfaceContainerLowest,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+      child: InkWell(
+        onTap: () => context.push('/seller/order-detail/${order.id}'),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -311,6 +314,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                 ),
               ),
           ],
+        ),
         ),
       ),
     );

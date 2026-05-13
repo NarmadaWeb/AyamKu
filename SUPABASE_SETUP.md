@@ -157,7 +157,9 @@ CREATE TABLE public.orders (
   "paymentProofUrl" TEXT,
   "paymentStatus" TEXT DEFAULT 'pending',
   "snapToken" TEXT,
-  "midtransOrderId" TEXT
+  "midtransOrderId" TEXT,
+  latitude DECIMAL,
+  longitude DECIMAL
 );
 
 -- Tabel Notifications
@@ -299,7 +301,7 @@ CREATE POLICY "Authenticated users can insert notifications" ON public.notificat
 ```sql
 -- avatars
 CREATE POLICY "Users can view own avatars" ON storage.objects
-  FOR SELECT USING (bucket_id = 'avatars' AND auth.uid() = owner);
+  FOR SELECT USING (bucket_id = 'avatars');
 
 CREATE POLICY "Users can upload avatars" ON storage.objects
   FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
@@ -362,3 +364,25 @@ CREATE TRIGGER on_auth_user_created
 
 Aktifkan **Leaked Password Protection** di Dashboard:  
 `Authentication` → `Settings` → `Password Protection` → ✅ `Prevent use of leaked passwords`
+
+### B.8 Konfigurasi Authentication untuk Reset Password
+
+Agar link reset password berfungsi dengan benar dan tidak diarahkan ke `localhost:3000`:
+
+1.  Buka **Authentication** > **URL Configuration**
+2.  Set **Site URL** ke: `ayamsegar://reset-password`
+3.  Tambahkan ke **Redirect URLs**: `ayamsegar://reset-password`
+4.  Pastikan di **Providers** > **Email**, `Confirm email` diaktifkan jika diperlukan, namun yang paling penting adalah URL Configuration di atas agar deep link di aplikasi berfungsi.
+
+### B.9 Konfigurasi Google Maps
+
+Untuk menggunakan fitur Maps di Dashboard Penjual, Anda harus menambahkan API Key Google Maps ke file `android/app/src/AndroidManifest.xml`:
+
+```xml
+<manifest ...>
+    <application ...>
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE"/>
+    </application>
+</manifest>
+```
