@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class NotificationModel {
   final String id;
   final String userId;
@@ -21,26 +19,27 @@ class NotificationModel {
     this.relatedId,
   });
 
-  factory NotificationModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>?;
+  factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: doc.id,
-      userId: data?['userId'] ?? '',
-      title: data?['title'] ?? '',
-      body: data?['body'] ?? '',
-      createdAt: (data?['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      isRead: data?['isRead'] ?? false,
-      type: data?['type'],
-      relatedId: data?['relatedId'],
+      id: json['id']?.toString() ?? '',
+      userId: json['userId'] ?? '',
+      title: json['title'] ?? '',
+      body: json['body'] ?? '',
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'].toString())
+          : DateTime.now(),
+      isRead: json['isRead'] ?? false,
+      type: json['type'],
+      relatedId: json['relatedId'],
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
       'userId': userId,
       'title': title,
       'body': body,
-      'createdAt': FieldValue.serverTimestamp(),
+      'createdAt': createdAt.toIso8601String(),
       'isRead': isRead,
       'type': type,
       'relatedId': relatedId,

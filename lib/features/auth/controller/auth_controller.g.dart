@@ -33,7 +33,7 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 }
 
-String _$authControllerHash() => r'55c16f7bd517598b1773a17410219d0c064108ca';
+String _$authControllerHash() => r'0f852c2216ce98525ba27aaddfa59f2d084805a6';
 
 abstract class _$AuthController extends $StreamNotifier<User?> {
   Stream<User?> build();
@@ -81,4 +81,4 @@ final class CurrentUserDataProvider extends $FunctionalProvider<
   }
 }
 
-String _$currentUserDataHash() => r'e090ff1806d58cadf901aa859d3373f62327a412';
+String _$currentUserDataHash() => r'd2fa4508c5b1efec6d163954ceb5b05653324255';

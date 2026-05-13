@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ProductModel {
   final String id;
   final String name;
@@ -23,22 +21,21 @@ class ProductModel {
     required this.weight,
   });
 
-  factory ProductModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>?;
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: doc.id,
-      name: data?['name'] ?? '',
-      description: data?['description'] ?? '',
-      price: (data?['price'] ?? 0).toDouble(),
-      unit: data?['unit'] ?? '',
-      imageUrl: data?['imageUrl'] ?? '',
-      category: data?['category'] ?? '',
-      isAvailable: data?['isAvailable'] ?? true,
-      weight: data?['weight'] ?? '',
+      id: json['id']?.toString() ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      unit: json['unit'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      category: json['category'] ?? '',
+      isAvailable: json['isAvailable'] ?? true,
+      weight: json['weight'] ?? '',
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
       'name': name,
       'description': description,

@@ -1,14 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../model/order.dart';
-import '../../home/model/notification_model.dart';
 
 part 'order_repository.g.dart';
 
 @riverpod
 OrderRepository orderRepository(Ref ref) {
-  return OrderRepository(FirebaseFirestore.instance, FirebaseAuth.instance);
+  return OrderRepository(Supabase.instance.client);
 }
 
 @riverpod
@@ -22,55 +20,49 @@ Stream<List<OrderModel>> allOrders(Ref ref) {
 }
 
 class OrderRepository {
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final SupabaseClient _supabase;
 
-  OrderRepository(this._firestore, this._auth);
+  OrderRepository(this._supabase);
 
   Stream<List<OrderModel>> getUserOrders() {
-    final user = _auth.currentUser;
+    final user = _supabase.auth.currentUser;
     if (user == null) return Stream.value([]);
 
-    return _firestore
-        .collection('orders')
-        .where('userId', isEqualTo: user.uid)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => OrderModel.fromFirestore(doc)).toList();
-    });
+    return _supabase
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('userId', user.id)
+        .order('createdAt', ascending: false)
+        .map((data) => data.map((json) => OrderModel.fromJson(json)).toList());
   }
 
   Stream<List<OrderModel>> getAllOrders() {
-    return _firestore
-        .collection('orders')
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => OrderModel.fromFirestore(doc)).toList();
-    });
+    return _supabase
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .order('createdAt', ascending: false)
+        .map((data) => data.map((json) => OrderModel.fromJson(json)).toList());
   }
 
   Future<void> createOrder(OrderModel order) async {
-    await _firestore.collection('orders').add(order.toFirestore());
+    await _supabase.from('orders').insert(order.toJson());
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {
-    await _firestore.collection('orders').doc(orderId).update({'status': status});
+    await _supabase.from('orders').update({'status': status}).eq('id', orderId);
 
-    // Create notification for the user
-    final orderDoc = await _firestore.collection('orders').doc(orderId).get();
-    final order = OrderModel.fromFirestore(orderDoc);
+    // Fetch order details for notification
+    final orderData = await _supabase.from('orders').select().eq('id', orderId).single();
+    final order = OrderModel.fromJson(orderData);
 
-    await _firestore.collection('notifications').add(NotificationModel(
-      id: '',
-      userId: order.userId,
-      title: 'Update Pesanan',
-      body: 'Status pesanan ${order.id.substring(0, 8)} Anda sekarang: $status',
-      createdAt: DateTime.now(),
-      isRead: false,
-      type: 'order_status',
-      relatedId: order.id,
-    ).toFirestore());
+    await _supabase.from('notifications').insert({
+      'userId': order.userId,
+      'title': 'Update Pesanan',
+      'body': 'Status pesanan ${order.id.substring(0, 8)} Anda sekarang: $status',
+      'createdAt': DateTime.now().toIso8601String(),
+      'isRead': false,
+      'type': 'order_status',
+      'relatedId': order.id,
+    });
   }
 }

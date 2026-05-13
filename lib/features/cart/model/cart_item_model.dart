@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class CartItemModel {
   final String id;
   final String productId;
@@ -21,21 +19,20 @@ class CartItemModel {
     required this.weight,
   });
 
-  factory CartItemModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>?;
+  factory CartItemModel.fromJson(Map<String, dynamic> json) {
     return CartItemModel(
-      id: doc.id,
-      productId: data?['productId'] ?? '',
-      name: data?['name'] ?? '',
-      price: (data?['price'] ?? 0).toDouble(),
-      imageUrl: data?['imageUrl'] ?? '',
-      quantity: data?['quantity'] ?? 1,
-      unit: data?['unit'] ?? '',
-      weight: data?['weight'] ?? '',
+      id: json['id']?.toString() ?? '',
+      productId: json['productId'] ?? '',
+      name: json['name'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      imageUrl: json['imageUrl'] ?? '',
+      quantity: json['quantity'] ?? 1,
+      unit: json['unit'] ?? '',
+      weight: json['weight'] ?? '',
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
       'productId': productId,
       'name': name,

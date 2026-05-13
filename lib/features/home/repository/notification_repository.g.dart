@@ -51,7 +51,7 @@ final class NotificationRepositoryProvider extends $FunctionalProvider<
 }
 
 String _$notificationRepositoryHash() =>
-    r'2a18bede7ddc6c57128990667d2911af7fab2164';
+    r'382d7fc1830266faacdb87fdcf174ee28941afe9';
 
 @ProviderFor(userNotifications)
 final userNotificationsProvider = UserNotificationsProvider._();
