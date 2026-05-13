@@ -11,6 +11,9 @@ class OrderModel {
   final String deliveryTimeSlot;
   final String paymentMethod;
   final String? paymentProofUrl;
+  final String paymentStatus; // 'pending', 'success', 'failed'
+  final String? snapToken;
+  final String? midtransOrderId;
 
   OrderModel({
     required this.id,
@@ -25,6 +28,9 @@ class OrderModel {
     required this.deliveryTimeSlot,
     required this.paymentMethod,
     this.paymentProofUrl,
+    this.paymentStatus = 'pending',
+    this.snapToken,
+    this.midtransOrderId,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -43,6 +49,9 @@ class OrderModel {
       deliveryTimeSlot: json['deliveryTimeSlot'] ?? '',
       paymentMethod: json['paymentMethod'] ?? '',
       paymentProofUrl: json['paymentProofUrl'],
+      paymentStatus: json['paymentStatus'] ?? 'pending',
+      snapToken: json['snapToken'],
+      midtransOrderId: json['midtransOrderId'],
     );
   }
 
@@ -59,6 +68,9 @@ class OrderModel {
       'deliveryTimeSlot': deliveryTimeSlot,
       'paymentMethod': paymentMethod,
       'paymentProofUrl': paymentProofUrl,
+      'paymentStatus': paymentStatus,
+      'snapToken': snapToken,
+      'midtransOrderId': midtransOrderId,
     };
   }
 }

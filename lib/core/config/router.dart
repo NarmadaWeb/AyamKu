@@ -132,9 +132,8 @@ GoRouter appRouter(Ref ref) {
           return isSeller ? '/seller-dashboard' : '/';
         }
 
-        // Optional: prevent regular users from accessing seller dashboard and vice-versa
+        // Optional: prevent regular users from accessing seller dashboard
         if (state.matchedLocation == '/seller-dashboard' && !isSeller) return '/';
-        if (state.matchedLocation == '/' && isSeller) return '/seller-dashboard';
       }
 
       return null;

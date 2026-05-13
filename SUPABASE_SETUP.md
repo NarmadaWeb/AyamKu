@@ -30,7 +30,8 @@ CREATE TABLE public.products (
   "imageUrl" TEXT,
   category TEXT,
   "isAvailable" BOOLEAN DEFAULT true,
-  weight TEXT
+  weight TEXT,
+  stock INTEGER DEFAULT 0
 );
 
 -- Tabel Cart
@@ -59,7 +60,10 @@ CREATE TABLE public.orders (
   "createdAt" TIMESTAMPTZ DEFAULT NOW(),
   "deliveryTimeSlot" TEXT,
   "paymentMethod" TEXT,
-  "paymentProofUrl" TEXT
+  "paymentProofUrl" TEXT,
+  "paymentStatus" TEXT DEFAULT 'pending',
+  "snapToken" TEXT,
+  "midtransOrderId" TEXT
 );
 
 -- Tabel Notifications

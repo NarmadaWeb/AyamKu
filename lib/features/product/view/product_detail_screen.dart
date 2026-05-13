@@ -154,34 +154,27 @@ class ProductDetailScreen extends HookConsumerWidget {
               Text(product.weight, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.primary)),
             ],
           ),
-          const SizedBox(height: 24),
-
-          Text('Pilihan Potongan', style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 12),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            childAspectRatio: 3.5,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _cutOption('Utuh', true),
-              _cutOption('Dada', false),
-              _cutOption('Paha Atas', false),
-              _cutOption('Paha Bawah', false),
-              _cutOption('Sayap', false),
-              _cutOption('Ceker', false),
+              Text('Stok Tersedia', style: Theme.of(context).textTheme.labelLarge),
+              Text('${product.stock} ${product.unit.replaceAll('/', '')}', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: product.stock > 0 ? AppTheme.primary : AppTheme.error)),
             ],
           ),
           const SizedBox(height: 24),
 
-          Text('Potong Sesuai Permintaan (Opsional)', style: Theme.of(context).textTheme.labelLarge),
+          Text('Deskripsi Produk', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          Text(product.description, style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 24),
+
+          Text('Catatan Pesanan (Opsional)', style: Theme.of(context).textTheme.labelLarge),
           const SizedBox(height: 8),
           TextField(
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: 'Contoh: Potong dadu kecil untuk sate...',
+              hintText: 'Tambahkan catatan untuk pesanan ini...',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               filled: true,
               fillColor: Colors.white,
@@ -261,7 +254,15 @@ class ProductDetailScreen extends HookConsumerWidget {
                   Text('${quantity.value}', style: const TextStyle(fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.add, color: AppTheme.primary),
-                    onPressed: () => quantity.value++,
+                    onPressed: () {
+                      if (quantity.value < product.stock) {
+                        quantity.value++;
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Stok tidak mencukupi')),
+                        );
+                      }
+                    },
                   ),
                 ],
               ),
@@ -269,7 +270,13 @@ class ProductDetailScreen extends HookConsumerWidget {
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {
+                onPressed: product.stock <= 0 ? null : () {
+                  if (quantity.value > product.stock) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Stok tidak mencukupi')),
+                    );
+                    return;
+                  }
                   ref.read(cartRepositoryProvider).addToCart(CartItemModel(
                     id: '',
                     productId: product.id,
@@ -285,7 +292,7 @@ class ProductDetailScreen extends HookConsumerWidget {
                   );
                 },
                 icon: const Icon(Icons.shopping_cart),
-                label: const Text('Tambah ke Keranjang'),
+                label: Text(product.stock <= 0 ? 'Stok Habis' : 'Tambah ke Keranjang'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE63939),
                   foregroundColor: Colors.white,
