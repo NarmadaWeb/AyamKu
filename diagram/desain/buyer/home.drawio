@@ -1,0 +1,70 @@
+<mxfile host="Electron" modified="2024-03-21T00:00:00.000Z" agent="5.0" version="24.0.4" type="device">
+  <diagram id="home-page" name="Home Screen">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Mobile Frame -->
+        <mxCell id="frame" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="720" as="geometry" />
+        </mxCell>
+        <!-- AppBar -->
+        <mxCell id="appbar" value="AyamSegar" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1;fontSize=18;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="notif_icon" value="[#]" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="533.5" y="234.5" width="40" height="40" as="geometry" />
+        </mxCell>
+        <!-- Content Scroll -->
+        <mxCell id="content" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="284.5" width="360" height="580" as="geometry" />
+        </mxCell>
+        <!-- Hero Banner -->
+        <mxCell id="banner" value="Ayam Baru Dipotong Hari Ini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1;fontSize=16;align=left;spacingLeft=12;verticalAlign=top;spacingTop=40;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="300.5" width="328" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="order_now_btn" value="Order Sekarang" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="261.5" y="420.5" width="120" height="35" as="geometry" />
+        </mxCell>
+        <!-- Categories -->
+        <mxCell id="cat_title" value="Kategori Pilihan" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="500.5" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cat1" value="O" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="530.5" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="cat1_label" value="Broiler" style="text;whiteSpace=wrap;html=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="580.5" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cat2" value="O" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="319.5" y="530.5" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="cat2_label" value="Kampung" style="text;whiteSpace=wrap;html=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="319.5" y="580.5" width="50" height="20" as="geometry" />
+        </mxCell>
+        <!-- Product Grid -->
+        <mxCell id="prod_title" value="Ayam Paling Laris" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="610.5" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="prod1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="640.5" width="150" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="prod1_img" value="[Img]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="640.5" width="150" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="prod2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="417.5" y="640.5" width="150" height="180" as="geometry" />
+        </mxCell>
+        <!-- Bottom Nav -->
+        <mxCell id="bottomnav" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="864.5" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="nav1" value="Home" style="text;align=center;fontSize=10;" vertex="1" parent="1"><mxGeometry x="233.5" y="904.5" width="72" height="20" as="geometry"/></mxCell>
+        <mxCell id="nav2" value="Katalog" style="text;align=center;fontSize=10;" vertex="1" parent="1"><mxGeometry x="305.5" y="904.5" width="72" height="20" as="geometry"/></mxCell>
+        <mxCell id="nav3" value="Cart" style="text;align=center;fontSize=10;" vertex="1" parent="1"><mxGeometry x="377.5" y="904.5" width="72" height="20" as="geometry"/></mxCell>
+        <mxCell id="nav4" value="Orders" style="text;align=center;fontSize=10;" vertex="1" parent="1"><mxGeometry x="449.5" y="904.5" width="72" height="20" as="geometry"/></mxCell>
+        <mxCell id="nav5" value="Profile" style="text;align=center;fontSize=10;" vertex="1" parent="1"><mxGeometry x="521.5" y="904.5" width="72" height="20" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

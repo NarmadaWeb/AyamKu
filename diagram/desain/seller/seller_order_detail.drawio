@@ -1,0 +1,43 @@
+<mxfile host="Electron" modified="2024-03-21T00:00:00.000Z" agent="5.0" version="24.0.4" type="device">
+  <diagram id="seller-order-detail-page" name="Seller Order Detail Screen">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Mobile Frame -->
+        <mxCell id="frame" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="720" as="geometry" />
+        </mxCell>
+        <!-- AppBar -->
+        <mxCell id="appbar" value="Detail Pesanan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1;fontSize=18;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="60" as="geometry" />
+        </mxCell>
+        <!-- Customer Info -->
+        <mxCell id="cust_title" value="Informasi Pelanggan" style="text;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="304.5" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cust_box" value="Nama: Budi Sudarsono&#10;Telp: 08123456789&#10;Alamat: Jl. Merdeka No. 123" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="329.5" width="328" height="70" as="geometry" />
+        </mxCell>
+        <!-- Map Placeholder -->
+        <mxCell id="map" value="Google Maps Location&#10;(IFrame)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;dashed=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="409.5" width="328" height="150" as="geometry" />
+        </mxCell>
+        <!-- Order Items -->
+        <mxCell id="items_title" value="Daftar Produk" style="text;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="579.5" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="items_box" value="1x Ayam Broiler Utuh - Rp 35.000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="604.5" width="328" height="40" as="geometry" />
+        </mxCell>
+        <!-- Actions -->
+        <mxCell id="bottom" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="864.5" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="confirm_btn" value="Konfirmasi Pesanan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="253.5" y="879.5" width="320" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
