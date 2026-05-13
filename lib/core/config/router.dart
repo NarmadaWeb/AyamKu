@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/view/login_screen.dart';
 import '../../features/auth/view/seller_login_screen.dart';
+import '../../features/auth/view/reset_password_screen.dart';
 import '../../features/home/view/home_screen.dart';
 import '../../features/home/view/splash_screen.dart';
 import '../../features/home/view/onboarding_screen.dart';
@@ -13,6 +14,8 @@ import '../../features/cart/view/cart_screen.dart';
 import '../../features/cart/view/checkout_screen.dart';
 import '../../features/profile/view/profile_screen.dart';
 import '../../features/orders/view/orders_screen.dart';
+import '../../features/orders/view/order_history_screen.dart';
+import '../../features/orders/view/payment_webview_screen.dart';
 import '../../features/seller/view/seller_dashboard_screen.dart';
 import '../../features/seller/view/add_edit_product_screen.dart';
 import '../../features/loyalty/view/loyalty_screen.dart';
@@ -60,6 +63,10 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const SellerLoginScreen(),
       ),
       GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
         path: '/',
         builder: (context, state) => const HomeScreen(),
       ),
@@ -86,6 +93,17 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/orders',
         builder: (context, state) => const OrdersScreen(),
+      ),
+      GoRoute(
+        path: '/order-history',
+        builder: (context, state) => const OrderHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/payment',
+        builder: (context, state) {
+          final url = state.extra as String;
+          return PaymentWebViewScreen(url: url);
+        },
       ),
       GoRoute(
         path: '/seller-dashboard',

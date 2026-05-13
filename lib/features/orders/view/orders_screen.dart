@@ -67,7 +67,7 @@ class OrdersScreen extends ConsumerWidget {
                   children: [
                     Text('Riwayat Pesanan', style: Theme.of(context).textTheme.headlineSmall),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => context.push('/order-history'),
                       child: const Row(
                         children: [
                           Text('Lihat Semua', style: TextStyle(fontWeight: FontWeight.bold)),

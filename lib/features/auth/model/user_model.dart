@@ -7,6 +7,8 @@ class UserModel {
   final String photoUrl;
   final String role; // 'user' or 'seller'
   final List<String> paymentMethods;
+  final double? latitude;
+  final double? longitude;
 
   UserModel({
     required this.uid,
@@ -17,6 +19,8 @@ class UserModel {
     required this.photoUrl,
     required this.role,
     required this.paymentMethods,
+    this.latitude,
+    this.longitude,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +35,8 @@ class UserModel {
       paymentMethods: json['paymentMethods'] is List
           ? List<String>.from((json['paymentMethods'] as List).map((e) => e.toString()))
           : [],
+      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
+      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
     );
   }
 
@@ -44,6 +50,8 @@ class UserModel {
       'photoUrl': photoUrl,
       'role': role,
       'paymentMethods': paymentMethods,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }

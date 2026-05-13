@@ -420,21 +420,7 @@ class CheckoutScreen extends HookConsumerWidget {
 
                     if (context.mounted) {
                       Navigator.pop(context); // Close processing dialog
-                      final url = Uri.parse(redirectUrl);
-                      bool launched = false;
-                      if (await canLaunchUrl(url)) {
-                        launched = await launchUrl(url, mode: LaunchMode.externalApplication);
-                      }
-
-                      if (!launched && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Tidak dapat membuka halaman pembayaran')),
-                        );
-                      }
-
-                      if (context.mounted) {
-                        context.go('/orders');
-                      }
+                      context.push('/payment', extra: redirectUrl);
                     }
                   } else {
                     await ref.read(cartRepositoryProvider).clearCart();
