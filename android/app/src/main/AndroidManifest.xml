@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <application
-        android:label="ayam_segar"
+        android:label="AyamSegar"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
