@@ -110,20 +110,23 @@ class AuthRepository {
       if (extension == '.webp') contentType = 'image/webp';
       if (extension == '.gif') contentType = 'image/gif';
 
-      final fileName = '$uid$extension';
-      final path = fileName;
+      // Always use a consistent filename to avoid multiple files for one user
+      // But we can include a timestamp for cache busting if needed,
+      // however the public URL from getPublicUrl stays the same if filename is the same.
+      final path = '$uid$extension';
 
-      await _supabase.storage.from('avatars').upload(
-        path,
-        file,
-        fileOptions: FileOptions(
-          upsert: true,
-          contentType: contentType,
-        ),
-      ).catchError((e) async {
-        // If upload fails, try to update if it exists (though upsert: true should handle this)
-        if (e.toString().contains('already exists')) {
-           return await _supabase.storage.from('avatars').update(
+      try {
+        await _supabase.storage.from('avatars').upload(
+          path,
+          file,
+          fileOptions: FileOptions(
+            upsert: true,
+            contentType: contentType,
+          ),
+        );
+      } on StorageException catch (e) {
+        if (e.message.contains('already exists') || e.statusCode == '409') {
+          await _supabase.storage.from('avatars').update(
             path,
             file,
             fileOptions: FileOptions(
@@ -131,12 +134,15 @@ class AuthRepository {
               contentType: contentType,
             ),
           );
+        } else {
+          rethrow;
         }
-        throw e;
-      });
+      }
 
       // Get public URL
-      return _supabase.storage.from('avatars').getPublicUrl(path);
+      final url = _supabase.storage.from('avatars').getPublicUrl(path);
+      // Append a timestamp to the URL to force image refresh in the app (cache busting)
+      return '$url?t=${DateTime.now().millisecondsSinceEpoch}';
     } catch (e) {
       debugPrint('Upload Error: $e');
       rethrow;

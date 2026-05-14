@@ -31,12 +31,15 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
           onPageFinished: (String url) {
             setState(() => _isLoading = false);
             // Midtrans often redirects or has specific success markers in URL
+            debugPrint('Midtrans Redirect URL: $url');
             if (url.contains('transaction_status=settlement') ||
                 url.contains('transaction_status=capture') ||
+                url.contains('status_code=200') ||
                 url.contains('/finish')) {
               _onPaymentSuccess();
             } else if (url.contains('transaction_status=deny') ||
                        url.contains('transaction_status=cancel') ||
+                       url.contains('transaction_status=expire') ||
                        url.contains('/error')) {
               _onPaymentFailed();
             }

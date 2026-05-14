@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,12 +11,44 @@ import '../repository/order_repository.dart';
 import '../model/order.dart';
 import '../repository/midtrans_service.dart';
 
-class OrdersScreen extends ConsumerWidget {
+class OrdersScreen extends HookConsumerWidget {
   const OrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ordersState = ref.watch(userOrdersProvider);
+
+    // Auto-check pending Midtrans payments on entry
+    useEffect(() {
+      final orders = ordersState.asData?.value;
+      if (orders != null) {
+        for (final order in orders) {
+          if (order.paymentStatus == 'pending' &&
+              order.paymentMethod != 'Bayar di Tempat (COD)' &&
+              order.status == 'Menunggu Konfirmasi') {
+
+            // Check Midtrans status in background
+            Future.microtask(() async {
+              try {
+                final midtransId = order.midtransOrderId ?? order.id;
+                final status = await ref.read(midtransServiceProvider).checkTransactionStatus(midtransId);
+                final transactionStatus = status['transaction_status'];
+
+                if (transactionStatus == 'settlement' || transactionStatus == 'capture') {
+                  await ref.read(orderRepositoryProvider).updateOrder(order.id, {
+                    'paymentStatus': 'success',
+                    'status': 'Dalam Proses Packing',
+                  });
+                }
+              } catch (e) {
+                debugPrint('Auto-check Midtrans failed for ${order.id}: $e');
+              }
+            });
+          }
+        }
+      }
+      return null;
+    }, [ordersState.asData?.value.length]);
 
     return Scaffold(
       backgroundColor: AppTheme.surface,

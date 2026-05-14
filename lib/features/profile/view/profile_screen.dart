@@ -217,25 +217,53 @@ class ProfileScreen extends HookConsumerWidget {
   }
 
   Future<void> _uploadImage(BuildContext context, WidgetRef ref, String uid, File file) async {
+    // Show loading indicator
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Mengunggah foto...'),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+
     try {
       final url = await ref.read(authRepositoryProvider).uploadProfileImage(uid, file);
       await ref.read(authRepositoryProvider).updateUserData(uid, {'photoUrl': url});
+
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Foto profil berhasil diperbarui'), backgroundColor: Colors.green),
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil berhasil diperbarui'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } catch (e) {
+      debugPrint('Error uploading profile image: $e');
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengunggah foto: $e'), backgroundColor: AppTheme.error),
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengunggah foto: ${e.toString()}'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }

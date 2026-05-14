@@ -380,6 +380,17 @@ Untuk menggunakan fitur Maps di Dashboard Penjual, Anda harus menambahkan API Ke
 
 ```xml
 <manifest ...>
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+    </queries>
+
     <application ...>
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE"/>
