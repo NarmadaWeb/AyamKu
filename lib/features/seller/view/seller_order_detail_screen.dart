@@ -177,9 +177,12 @@ class SellerOrderDetailScreen extends HookConsumerWidget {
             GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () async {
-                final url = 'https://www.google.com/maps/search/?api=1&query=${order.latitude},${order.longitude}';
+                final url = 'geo:${order.latitude},${order.longitude}?q=${order.latitude},${order.longitude}';
                 if (await canLaunchUrl(Uri.parse(url))) {
-                  await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                  await launchUrl(Uri.parse(url));
+                } else {
+                  final fallbackUrl = 'https://www.google.com/maps/search/?api=1&query=${order.latitude},${order.longitude}';
+                  await launchUrl(Uri.parse(fallbackUrl), mode: LaunchMode.externalApplication);
                 }
               },
               child: Container(color: Colors.transparent),
@@ -189,9 +192,12 @@ class SellerOrderDetailScreen extends HookConsumerWidget {
               right: 8,
               child: FloatingActionButton.small(
                 onPressed: () async {
-                  final url = 'https://www.google.com/maps/search/?api=1&query=${order.latitude},${order.longitude}';
+                  final url = 'geo:${order.latitude},${order.longitude}?q=${order.latitude},${order.longitude}';
                   if (await canLaunchUrl(Uri.parse(url))) {
-                    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                    await launchUrl(Uri.parse(url));
+                  } else {
+                    final fallbackUrl = 'https://www.google.com/maps/search/?api=1&query=${order.latitude},${order.longitude}';
+                    await launchUrl(Uri.parse(fallbackUrl), mode: LaunchMode.externalApplication);
                   }
                 },
                 backgroundColor: Colors.white,
