@@ -1,0 +1,39 @@
+<mxfile host="Electron" modified="2024-03-21T00:00:00.000Z" agent="5.0" version="24.0.4" type="device">
+  <diagram id="add-edit-product-page" name="Add/Edit Product Screen">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Mobile Frame -->
+        <mxCell id="frame" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="720" as="geometry" />
+        </mxCell>
+        <!-- AppBar -->
+        <mxCell id="appbar" value="Tambah/Edit Produk" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1;fontSize=18;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="60" as="geometry" />
+        </mxCell>
+        <!-- Image Picker -->
+        <mxCell id="img_picker" value="[+] Ambil Foto Produk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;dashed=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="304.5" width="328" height="180" as="geometry" />
+        </mxCell>
+        <!-- Form Fields -->
+        <mxCell id="name_input" value="Nama Produk" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="504.5" width="328" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="price_input" value="Harga (Rp)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="564.5" width="150" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="stock_input" value="Stok" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="427.5" y="564.5" width="150" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="desc_input" value="Deskripsi Produk" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=12;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="624.5" width="328" height="100" as="geometry" />
+        </mxCell>
+        <!-- Save Button -->
+        <mxCell id="save_btn" value="Simpan Produk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="253.5" y="854.5" width="320" height="55" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,43 @@
+<mxfile host="Electron" modified="2024-03-21T00:00:00.000Z" agent="5.0" version="24.0.4" type="device">
+  <diagram id="catalog-page" name="Catalog Screen">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Mobile Frame -->
+        <mxCell id="frame" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="720" as="geometry" />
+        </mxCell>
+        <!-- AppBar -->
+        <mxCell id="appbar" value="Katalog Produk" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1;fontSize=18;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="60" as="geometry" />
+        </mxCell>
+        <!-- Search Bar -->
+        <mxCell id="search" value="Cari ayam segar..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontSize=12;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="300.5" width="328" height="45" as="geometry" />
+        </mxCell>
+        <!-- Filters/Categories Chips -->
+        <mxCell id="chip1" value="Semua" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="360.5" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="chip2" value="Broiler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="339.5" y="360.5" width="80" height="30" as="geometry" />
+        </mxCell>
+        <!-- Product List -->
+        <mxCell id="prod1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="410.5" width="150" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="prod2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="417.5" y="410.5" width="150" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="prod3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="249.5" y="650.5" width="150" height="220" as="geometry" />
+        </mxCell>
+        <!-- Bottom Nav Placeholder -->
+        <mxCell id="bottomnav" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="864.5" width="360" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

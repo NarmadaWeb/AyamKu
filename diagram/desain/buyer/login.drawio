@@ -1,0 +1,56 @@
+<mxfile host="Electron" modified="2024-03-21T00:00:00.000Z" agent="5.0" version="24.0.4" type="device">
+  <diagram id="login-page" name="Login Screen">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Mobile Frame -->
+        <mxCell id="frame" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="720" as="geometry" />
+        </mxCell>
+        <!-- Logo -->
+        <mxCell id="logo" value="AyamSegar" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=28;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="288.5" y="284.5" width="250" height="40" as="geometry" />
+        </mxCell>
+        <!-- Subtitle -->
+        <mxCell id="subtitle" value="Masuk atau daftar untuk melanjutkan" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="263.5" y="324.5" width="300" height="20" as="geometry" />
+        </mxCell>
+        <!-- Form Container -->
+        <mxCell id="form" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="253.5" y="374.5" width="320" height="500" as="geometry" />
+        </mxCell>
+        <!-- Email Field -->
+        <mxCell id="email_label" value="Email" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="273.5" y="404.5" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="email_input" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="273.5" y="424.5" width="280" height="45" as="geometry" />
+        </mxCell>
+        <!-- Password Field -->
+        <mxCell id="pass_label" value="Password" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="273.5" y="484.5" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="pass_input" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="273.5" y="504.5" width="280" height="45" as="geometry" />
+        </mxCell>
+        <!-- Forgot Password -->
+        <mxCell id="forgot_btn" value="Lupa Password?" style="text;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="453.5" y="554.5" width="100" height="20" as="geometry" />
+        </mxCell>
+        <!-- Login Button -->
+        <mxCell id="login_btn" value="Masuk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="273.5" y="604.5" width="280" height="45" as="geometry" />
+        </mxCell>
+        <!-- Toggle Button -->
+        <mxCell id="toggle_btn" value="Belum punya akun? Daftar" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="273.5" y="664.5" width="280" height="30" as="geometry" />
+        </mxCell>
+        <!-- Seller Link -->
+        <mxCell id="seller_btn" value="Masuk Sebagai Seller" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="273.5" y="734.5" width="280" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,48 @@
+<mxfile host="Electron" modified="2024-03-21T00:00:00.000Z" agent="5.0" version="24.0.4" type="device">
+  <diagram id="profile-page" name="Profile Screen">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Mobile Frame -->
+        <mxCell id="frame" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="720" as="geometry" />
+        </mxCell>
+        <!-- AppBar -->
+        <mxCell id="appbar" value="Profil Saya" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1;fontSize=18;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="224.5" width="360" height="60" as="geometry" />
+        </mxCell>
+        <!-- Header Info -->
+        <mxCell id="avatar" value="O" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontSize=24;" vertex="1" parent="1">
+          <mxGeometry x="373.5" y="304.5" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="name" value="Budi Sudarsono" style="text;whiteSpace=wrap;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="288.5" y="394.5" width="250" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="email" value="budi@example.com" style="text;whiteSpace=wrap;html=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="288.5" y="419.5" width="250" height="20" as="geometry" />
+        </mxCell>
+        <!-- Menu List -->
+        <mxCell id="menu1" value="Edit Profil" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="464.5" width="360" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="menu2" value="Pusat Bantuan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="519.5" width="360" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="menu3" value="Loyalty &amp; Point" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="574.5" width="360" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="menu4" value="Resep Masakan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="629.5" width="360" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="logout" value="Keluar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="253.5" y="754.5" width="320" height="50" as="geometry" />
+        </mxCell>
+        <!-- Bottom Nav Placeholder -->
+        <mxCell id="bottomnav" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="233.5" y="864.5" width="360" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
