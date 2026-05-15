@@ -174,7 +174,9 @@ GoRouter appRouter(Ref ref) {
       final isLoggingIn = state.matchedLocation == '/login' ||
           state.matchedLocation == '/login-seller' ||
           state.matchedLocation == '/onboarding' ||
-          state.matchedLocation == '/splash';
+          state.matchedLocation == '/splash' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/reset-password';
 
       if (!isAuth && !isLoggingIn) return '/login';
 

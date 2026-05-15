@@ -125,7 +125,8 @@ class AuthRepository {
           ),
         );
       } on StorageException catch (e) {
-        if (e.message.contains('already exists') || e.statusCode == '409') {
+        final statusCode = e.statusCode?.toString();
+        if (e.message.contains('already exists') || statusCode == '409' || statusCode == 'Conflict') {
           await _supabase.storage.from('avatars').update(
             path,
             file,
