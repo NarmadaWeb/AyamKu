@@ -220,6 +220,7 @@ class ProfileScreen extends HookConsumerWidget {
     // Show loading indicator
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
+    // Using a separate context for the dialog to ensure we can pop it safely
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -245,7 +246,8 @@ class ProfileScreen extends HookConsumerWidget {
       await ref.read(authRepositoryProvider).updateUserData(uid, {'photoUrl': url});
 
       if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
+        // Pop the dialog using the root navigator to ensure it's the dialog being popped
+        Navigator.of(context, rootNavigator: true).pop();
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Foto profil berhasil diperbarui'),
@@ -257,7 +259,8 @@ class ProfileScreen extends HookConsumerWidget {
     } catch (e) {
       debugPrint('Error uploading profile image: $e');
       if (context.mounted) {
-        Navigator.pop(context); // Close loading dialog
+        // Pop the dialog
+        Navigator.of(context, rootNavigator: true).pop();
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Gagal mengunggah foto: ${e.toString()}'),
