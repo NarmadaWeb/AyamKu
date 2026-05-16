@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
@@ -65,8 +66,10 @@ class HomeScreen extends ConsumerWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          image: const DecorationImage(
-            image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuAuCK1RcHZ6b4uIoDucltteP0kx5WFtCw7atcPaEPxUp1H5BeRbY7qV3s9gsRNj8HhnrK519BmAwMmnsNuTU8h2HNdRDclsrp3YN3qpjd0hzTuEouUCBUzZBB9_hzCe2mj9f--xuGfh3BsnO8ZlH_j2bRwFL1nOYaw_h06FPgfWV6-vryVNHPBaqtHaAk-GQ2dQas2N6S3qkiz42GTZPN7tRo_4m-pF_dWH9p1K7AaqUNtj6wQzgqrq8YrbfNdAUJUHklRxAJVzng'),
+          image: DecorationImage(
+            image: CachedNetworkImageProvider(
+              'https://lh3.googleusercontent.com/aida-public/AB6AXuAuCK1RcHZ6b4uIoDucltteP0kx5WFtCw7atcPaEPxUp1H5BeRbY7qV3s9gsRNj8HhnrK519BmAwMmnsNuTU8h2HNdRDclsrp3YN3qpjd0hzTuEouUCBUzZBB9_hzCe2mj9f--xuGfh3BsnO8ZlH_j2bRwFL1nOYaw_h06FPgfWV6-vryVNHPBaqtHaAk-GQ2dQas2N6S3qkiz42GTZPN7tRo_4m-pF_dWH9p1K7AaqUNtj6wQzgqrq8YrbfNdAUJUHklRxAJVzng',
+            ),
             fit: BoxFit.cover,
           ),
         ),
@@ -165,7 +168,26 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: cat.containsKey('icon')
-                            ? Image.network(cat['icon'] as String, fit: BoxFit.cover, opacity: const AlwaysStoppedAnimation(0.8))
+                            ? CachedNetworkImage(
+                                imageUrl: cat['icon'] as String,
+                                fit: BoxFit.cover,
+                                // Optimization: Using imageBuilder instead of Opacity widget is more efficient
+                                // as it avoids creating an extra layer in the rendering pipeline.
+                                imageBuilder: (context, imageProvider) => Container(
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                      colorFilter: ColorFilter.mode(
+                                        Colors.white.withValues(alpha: 0.8),
+                                        BlendMode.dstIn,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                placeholder: (context, url) => Container(color: AppTheme.surface),
+                                errorWidget: (context, url, error) => const Icon(Icons.error),
+                              )
                             : Icon(cat['materialIcon'] as IconData, color: AppTheme.primary, size: 28),
                       ),
                       const SizedBox(height: 4),
@@ -241,7 +263,16 @@ class HomeScreen extends ConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(product.imageUrl, fit: BoxFit.cover),
+                  // Optimization: CachedNetworkImage improves performance by:
+                  // 1. Reducing network requests for repeat views
+                  // 2. Improving scroll smoothness by avoiding image flickering
+                  // 3. Persisting images across app restarts
+                  CachedNetworkImage(
+                    imageUrl: product.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: AppTheme.surface),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                  ),
                   Positioned(
                     top: 8,
                     right: 8,
