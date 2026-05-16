@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -171,7 +172,18 @@ class CatalogScreen extends HookConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(product.imageUrl, fit: BoxFit.cover, color: product.stock <= 0 ? Colors.black.withValues(alpha: 0.5) : null, colorBlendMode: product.stock <= 0 ? BlendMode.darken : null),
+                  // Optimization: CachedNetworkImage improves performance by:
+                  // 1. Reducing network requests for repeat views in the grid
+                  // 2. Improving scroll smoothness by caching decoded images
+                  // 3. Reducing data usage for the end user
+                  CachedNetworkImage(
+                    imageUrl: product.imageUrl,
+                    fit: BoxFit.cover,
+                    color: product.stock <= 0 ? Colors.black.withValues(alpha: 0.5) : null,
+                    colorBlendMode: product.stock <= 0 ? BlendMode.darken : null,
+                    placeholder: (context, url) => Container(color: AppTheme.surface),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                  ),
                   if (product.stock <= 0)
                     Center(
                       child: Container(
