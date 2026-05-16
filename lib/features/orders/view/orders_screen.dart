@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../home/repository/notification_repository.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../../../core/theme/app_theme.dart';
 import '../repository/order_repository.dart';
 import '../model/order.dart';
@@ -260,16 +261,28 @@ class OrdersScreen extends HookConsumerWidget {
                      if (transactionStatus == 'settlement' || transactionStatus == 'capture') {
                        await ref.read(orderRepositoryProvider).updateOrder(order.id, {'paymentStatus': 'success', 'status': 'Dalam Proses Packing'});
                        if (context.mounted) {
-                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pembayaran berhasil dikonfirmasi!'), backgroundColor: Colors.green));
+                         AppDialogs.showSuccessDialog(
+                           context: context,
+                           title: 'Berhasil',
+                           message: 'Pembayaran berhasil dikonfirmasi!',
+                         );
                        }
                      } else {
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Status Pembayaran: ${transactionStatus ?? 'Null'}')));
+                          AppDialogs.showErrorDialog(
+                            context: context,
+                            title: 'Status Pembayaran',
+                            message: 'Status: ${transactionStatus ?? 'Tidak diketahui'}',
+                          );
                         }
                      }
                    } catch (e) {
                      if (context.mounted) {
-                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengecek status: $e'), backgroundColor: AppTheme.error));
+                       AppDialogs.showErrorDialog(
+                         context: context,
+                         title: 'Gagal',
+                         message: 'Gagal mengecek status: $e',
+                       );
                      }
                    }
                 },
@@ -297,12 +310,20 @@ class OrdersScreen extends HookConsumerWidget {
           await ref.read(orderRepositoryProvider).uploadPaymentProof(orderId, File(image.path));
           if (context.mounted) {
             Navigator.pop(context); // Close loading
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bukti pembayaran berhasil diunggah!'), backgroundColor: Colors.green));
+            AppDialogs.showSuccessDialog(
+              context: context,
+              title: 'Berhasil',
+              message: 'Bukti pembayaran berhasil diunggah!',
+            );
           }
         } catch (e) {
           if (context.mounted) {
             Navigator.pop(context); // Close loading
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunggah bukti: $e'), backgroundColor: AppTheme.error));
+            AppDialogs.showErrorDialog(
+              context: context,
+              title: 'Gagal',
+              message: 'Gagal mengunggah bukti: $e',
+            );
           }
         }
       }

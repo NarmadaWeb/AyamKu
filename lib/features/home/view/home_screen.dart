@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../repository/notification_repository.dart';
 import '../../product/repository/product_repository.dart';
@@ -310,8 +311,10 @@ class HomeScreen extends ConsumerWidget {
                                 unit: product.unit,
                                 weight: product.weight,
                               ));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
+                              AppDialogs.showAddToCartDialog(
+                                context: context,
+                                productName: product.name,
+                                onGoToCart: () => context.go('/cart'),
                               );
                             },
                             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),

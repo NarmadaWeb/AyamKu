@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/repository/auth_repository.dart';
 import '../../auth/model/user_model.dart';
@@ -160,8 +161,10 @@ class ProfileScreen extends HookConsumerWidget {
                     final file = File(image.path);
                     if (await file.length() > 2 * 1024 * 1024) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Ukuran gambar terlalu besar (Maksimal 2MB)'), backgroundColor: AppTheme.error),
+                        AppDialogs.showErrorDialog(
+                          context: context,
+                          title: 'Gambar Terlalu Besar',
+                          message: 'Ukuran gambar maksimal adalah 2MB.',
                         );
                       }
                       return;
@@ -172,8 +175,10 @@ class ProfileScreen extends HookConsumerWidget {
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal memilih gambar: $e'), backgroundColor: AppTheme.error),
+                    AppDialogs.showErrorDialog(
+                      context: context,
+                      title: 'Gagal',
+                      message: 'Gagal memilih gambar: $e',
                     );
                   }
                 }
@@ -191,8 +196,10 @@ class ProfileScreen extends HookConsumerWidget {
                     final file = File(image.path);
                     if (await file.length() > 2 * 1024 * 1024) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Ukuran gambar terlalu besar (Maksimal 2MB)'), backgroundColor: AppTheme.error),
+                        AppDialogs.showErrorDialog(
+                          context: context,
+                          title: 'Gambar Terlalu Besar',
+                          message: 'Ukuran gambar maksimal adalah 2MB.',
                         );
                       }
                       return;
@@ -203,8 +210,10 @@ class ProfileScreen extends HookConsumerWidget {
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal mengambil foto: $e'), backgroundColor: AppTheme.error),
+                    AppDialogs.showErrorDialog(
+                      context: context,
+                      title: 'Gagal',
+                      message: 'Gagal mengambil foto: $e',
                     );
                   }
                 }
@@ -218,7 +227,6 @@ class ProfileScreen extends HookConsumerWidget {
 
   Future<void> _uploadImage(BuildContext context, WidgetRef ref, String uid, File file) async {
     // Show loading indicator
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     // Using a separate context for the dialog to ensure we can pop it safely
     showDialog(
@@ -248,12 +256,10 @@ class ProfileScreen extends HookConsumerWidget {
       if (context.mounted) {
         // Pop the dialog using the root navigator to ensure it's the dialog being popped
         Navigator.of(context, rootNavigator: true).pop();
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Foto profil berhasil diperbarui'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
+        AppDialogs.showSuccessDialog(
+          context: context,
+          title: 'Berhasil',
+          message: 'Foto profil berhasil diperbarui',
         );
       }
     } catch (e) {
@@ -261,12 +267,10 @@ class ProfileScreen extends HookConsumerWidget {
       if (context.mounted) {
         // Pop the dialog
         Navigator.of(context, rootNavigator: true).pop();
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text('Gagal mengunggah foto: ${e.toString()}'),
-            backgroundColor: AppTheme.error,
-            behavior: SnackBarBehavior.floating,
-          ),
+        AppDialogs.showErrorDialog(
+          context: context,
+          title: 'Gagal',
+          message: 'Gagal mengunggah foto: ${e.toString()}',
         );
       }
     }
@@ -318,13 +322,17 @@ class ProfileScreen extends HookConsumerWidget {
                           addressController.text = "${place.street}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}, ${place.postalCode}";
                         }
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Lokasi berhasil didapatkan')),
+                        AppDialogs.showSuccessDialog(
+                          context: context,
+                          title: 'Berhasil',
+                          message: 'Lokasi berhasil didapatkan',
                         );
                       }
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Gagal mendapatkan lokasi: $e'), backgroundColor: AppTheme.error),
+                      AppDialogs.showErrorDialog(
+                        context: context,
+                        title: 'Gagal',
+                        message: 'Gagal mendapatkan lokasi: $e',
                       );
                     }
                   },
@@ -354,14 +362,18 @@ class ProfileScreen extends HookConsumerWidget {
                     });
                     if (context.mounted) {
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Profil berhasil diperbarui'), backgroundColor: Colors.green),
+                      AppDialogs.showSuccessDialog(
+                        context: context,
+                        title: 'Berhasil',
+                        message: 'Profil berhasil diperbarui',
                       );
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Gagal memperbarui profil: $e'), backgroundColor: AppTheme.error),
+                      AppDialogs.showErrorDialog(
+                        context: context,
+                        title: 'Gagal',
+                        message: 'Gagal memperbarui profil: $e',
                       );
                     }
                   }
@@ -422,14 +434,18 @@ class ProfileScreen extends HookConsumerWidget {
                       }
                       await ref.read(authRepositoryProvider).updateUserData(userData.uid, {'paymentMethods': current});
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Metode pembayaran $method ${val == true ? 'ditambahkan' : 'dihapus'}'), backgroundColor: Colors.green),
+                        AppDialogs.showSuccessDialog(
+                          context: context,
+                          title: 'Berhasil',
+                          message: 'Metode pembayaran $method ${val == true ? 'ditambahkan' : 'dihapus'}',
                         );
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Gagal memperbarui metode pembayaran: $e'), backgroundColor: AppTheme.error),
+                        AppDialogs.showErrorDialog(
+                          context: context,
+                          title: 'Gagal',
+                          message: 'Gagal memperbarui metode pembayaran: $e',
                         );
                       }
                     }

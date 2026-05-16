@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../home/repository/notification_repository.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../repository/cart_repository.dart';
 import '../model/cart_item_model.dart';
 import 'package:intl/intl.dart';
@@ -61,62 +62,56 @@ class CartScreen extends ConsumerWidget {
           final shipping = 15000.0;
           final total = subtotal + shipping;
 
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Keranjang Anda', style: Theme.of(context).textTheme.headlineMedium),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(color: AppTheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(100)),
+                      child: Text('${items.length} Item', style: Theme.of(context).textTheme.labelSmall),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ...items.map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _cartItem(context, item, ref, currencyFormat),
+                )),
+                const SizedBox(height: 24),
+                _buildSummary(context, subtotal, shipping, total, currencyFormat),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => context.push('/checkout'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: AppTheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Keranjang Anda', style: Theme.of(context).textTheme.headlineMedium),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(color: AppTheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(100)),
-                            child: Text('${items.length} Item', style: Theme.of(context).textTheme.labelSmall),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      ...items.map((item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _cartItem(context, item, ref, currencyFormat),
-                      )),
-                      const SizedBox(height: 24),
-                      _buildSummary(context, subtotal, shipping, total, currencyFormat),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => context.push('/checkout'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: AppTheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          minimumSize: const Size(double.infinity, 56),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('Lanjut ke Checkout', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward),
-                          ],
-                        ),
-                      ),
+                      Text('Lanjut ke Checkout', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward),
                     ],
                   ),
                 ),
-              ),
-              _buildBottomNav(context),
-            ],
+              ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(child: Text('Error: $e')),
       ),
+      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
@@ -150,23 +145,16 @@ class CartScreen extends ConsumerWidget {
                     IconButton(
                       icon: const Icon(Icons.delete_outline, color: AppTheme.error, size: 20),
                       onPressed: () {
-                         showDialog(
-                           context: context,
-                           builder: (context) => AlertDialog(
-                             title: const Text('Hapus Item?'),
-                             content: Text('Apakah Anda yakin ingin menghapus ${item.name} dari keranjang?'),
-                             actions: [
-                               TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-                               TextButton(
-                                 onPressed: () {
-                                   ref.read(cartRepositoryProvider).removeFromCart(item.id);
-                                   Navigator.pop(context);
-                                 },
-                                 child: const Text('Hapus', style: TextStyle(color: AppTheme.error)),
-                               ),
-                             ],
-                           ),
-                         );
+                        AppDialogs.showConfirmDialog(
+                          context: context,
+                          title: 'Hapus Item?',
+                          message: 'Apakah Anda yakin ingin menghapus ${item.name} dari keranjang?',
+                          confirmText: 'Hapus',
+                          confirmColor: AppTheme.error,
+                          onConfirm: () {
+                            ref.read(cartRepositoryProvider).removeFromCart(item.id);
+                          },
+                        );
                       },
                     ),
                   ],
@@ -198,8 +186,10 @@ class CartScreen extends ConsumerWidget {
                                 await ref.read(cartRepositoryProvider).updateQuantity(item.id, item.quantity + 1);
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: AppTheme.error),
+                                  AppDialogs.showErrorDialog(
+                                    context: context,
+                                    title: 'Gagal',
+                                    message: e.toString().replaceAll('Exception: ', ''),
                                   );
                                 }
                               }

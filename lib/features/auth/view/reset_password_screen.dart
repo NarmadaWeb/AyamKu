@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../repository/auth_repository.dart';
 
 class ResetPasswordScreen extends HookConsumerWidget {
@@ -17,15 +18,19 @@ class ResetPasswordScreen extends HookConsumerWidget {
 
     Future<void> handleResetPassword() async {
       if (passwordController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password tidak boleh kosong'), backgroundColor: AppTheme.error),
+        AppDialogs.showErrorDialog(
+          context: context,
+          title: 'Gagal',
+          message: 'Password tidak boleh kosong',
         );
         return;
       }
 
       if (passwordController.text != confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Konfirmasi password tidak cocok'), backgroundColor: AppTheme.error),
+        AppDialogs.showErrorDialog(
+          context: context,
+          title: 'Gagal',
+          message: 'Konfirmasi password tidak cocok',
         );
         return;
       }
@@ -36,15 +41,19 @@ class ResetPasswordScreen extends HookConsumerWidget {
         // Sign out to force user to login with new password
         await ref.read(authRepositoryProvider).signOut();
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password berhasil diperbarui! Silakan masuk kembali.'), backgroundColor: Colors.green),
+          AppDialogs.showSuccessDialog(
+            context: context,
+            title: 'Berhasil!',
+            message: 'Password berhasil diperbarui! Silakan masuk kembali.',
+            onPressed: () => context.go('/login'),
           );
-          context.go('/login');
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal memperbarui password: $e'), backgroundColor: AppTheme.error),
+          AppDialogs.showErrorDialog(
+            context: context,
+            title: 'Gagal',
+            message: 'Gagal memperbarui password: $e',
           );
         }
       } finally {

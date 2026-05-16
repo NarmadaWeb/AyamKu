@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../controller/auth_controller.dart';
 
 class SellerLoginScreen extends HookConsumerWidget {
@@ -35,8 +36,10 @@ class SellerLoginScreen extends HookConsumerWidget {
       if (next is AsyncData && next.value != null) {
         if (next.value!.role != 'seller') {
           ref.read(authControllerProvider.notifier).signOut();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Akun ini tidak memiliki hak akses sebagai Seller'), backgroundColor: AppTheme.error),
+          AppDialogs.showErrorDialog(
+            context: context,
+            title: 'Akses Ditolak',
+            message: 'Akun ini tidak memiliki hak akses sebagai Seller.',
           );
         }
       }

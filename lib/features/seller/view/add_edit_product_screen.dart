@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../../product/repository/product_repository.dart';
 import '../../product/model/product_model.dart';
 
@@ -55,11 +56,10 @@ class _AddEditProductForm extends HookConsumerWidget {
 
         if (bytes > 2 * 1024 * 1024) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Ukuran gambar terlalu besar (Maksimal 2MB)'),
-                backgroundColor: AppTheme.error,
-              ),
+            AppDialogs.showErrorDialog(
+              context: context,
+              title: 'Gambar Terlalu Besar',
+              message: 'Ukuran gambar maksimal adalah 2MB.',
             );
           }
           return;
@@ -71,8 +71,10 @@ class _AddEditProductForm extends HookConsumerWidget {
           imageUrl.value = url;
         } catch (e) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Gagal upload gambar: $e'), backgroundColor: AppTheme.error),
+            AppDialogs.showErrorDialog(
+              context: context,
+              title: 'Gagal',
+              message: 'Gagal upload gambar: $e',
             );
           }
         } finally {
@@ -201,14 +203,18 @@ class _AddEditProductForm extends HookConsumerWidget {
               child: ElevatedButton(
                 onPressed: isUploading.value ? null : () async {
                   if (nameController.text.isEmpty || priceController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Nama dan Harga wajib diisi')),
+                    AppDialogs.showErrorDialog(
+                      context: context,
+                      title: 'Data Tidak Lengkap',
+                      message: 'Nama dan Harga wajib diisi',
                     );
                     return;
                   }
                   if (imageUrl.value.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Silakan upload gambar produk terlebih dahulu')),
+                    AppDialogs.showErrorDialog(
+                      context: context,
+                      title: 'Gambar Belum Ada',
+                      message: 'Silakan upload gambar produk terlebih dahulu',
                     );
                     return;
                   }
@@ -237,8 +243,10 @@ class _AddEditProductForm extends HookConsumerWidget {
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Gagal menyimpan produk: $e')),
+                      AppDialogs.showErrorDialog(
+                        context: context,
+                        title: 'Gagal',
+                        message: 'Gagal menyimpan produk: $e',
                       );
                     }
                   }
