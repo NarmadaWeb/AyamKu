@@ -9,6 +9,7 @@ import '../../orders/repository/order_repository.dart';
 import '../../orders/model/order.dart';
 import '../../auth/model/user_model.dart';
 import '../repository/cart_repository.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import 'package:intl/intl.dart';
 import '../../orders/repository/midtrans_service.dart';
 
@@ -442,17 +443,21 @@ class CheckoutScreen extends HookConsumerWidget {
                     await ref.read(cartRepositoryProvider).clearCart();
                     if (context.mounted) {
                       Navigator.pop(context); // Close processing dialog
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Pesanan berhasil dibuat!'), backgroundColor: Colors.green),
+                      AppDialogs.showSuccessDialog(
+                        context: context,
+                        title: 'Pesanan Berhasil!',
+                        message: 'Pesanan Anda berhasil dibuat dan sedang menunggu konfirmasi.',
+                        onPressed: () => context.go('/orders'),
                       );
-                      context.go('/orders');
                     }
                   }
                 } catch (e) {
                   if (context.mounted) {
                     Navigator.pop(context); // Close processing dialog
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal memproses pesanan: $e'), backgroundColor: AppTheme.error),
+                    AppDialogs.showErrorDialog(
+                      context: context,
+                      title: 'Gagal',
+                      message: 'Gagal memproses pesanan: $e',
                     );
                   }
                 }

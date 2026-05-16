@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../controller/auth_controller.dart';
 
 class ForgotPasswordScreen extends HookConsumerWidget {
@@ -16,8 +17,10 @@ class ForgotPasswordScreen extends HookConsumerWidget {
     Future<void> handleSendResetLink() async {
       final email = emailController.text.trim();
       if (email.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Masukkan email Anda'), backgroundColor: AppTheme.error),
+        AppDialogs.showErrorDialog(
+          context: context,
+          title: 'Email Kosong',
+          message: 'Silakan masukkan email Anda untuk mereset password.',
         );
         return;
       }
@@ -26,15 +29,19 @@ class ForgotPasswordScreen extends HookConsumerWidget {
       try {
         await ref.read(authControllerProvider.notifier).resetPassword(email);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Email reset password telah dikirim ke $email'), backgroundColor: Colors.green),
+          AppDialogs.showSuccessDialog(
+            context: context,
+            title: 'Email Terkirim',
+            message: 'Email reset password telah dikirim ke $email. Silakan periksa kotak masuk Anda.',
+            onPressed: () => context.pop(),
           );
-          context.pop();
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal mengirim email reset: $e'), backgroundColor: AppTheme.error),
+          AppDialogs.showErrorDialog(
+            context: context,
+            title: 'Gagal',
+            message: 'Gagal mengirim email reset: $e',
           );
         }
       } finally {

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../repository/order_repository.dart';
 
 class PaymentWebViewScreen extends ConsumerStatefulWidget {
@@ -69,18 +70,22 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pembayaran Berhasil!'), backgroundColor: Colors.green),
+        AppDialogs.showSuccessDialog(
+          context: context,
+          title: 'Pembayaran Berhasil!',
+          message: 'Terima kasih telah berbelanja di AyamSegar.',
+          onPressed: () => context.go('/orders'),
         );
-        context.go('/orders');
       }
     }
   }
 
   void _onPaymentFailed() {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pembayaran Gagal atau Dibatalkan'), backgroundColor: AppTheme.error),
+      AppDialogs.showErrorDialog(
+        context: context,
+        title: 'Pembayaran Gagal',
+        message: 'Pembayaran Anda gagal atau dibatalkan. Silakan coba lagi.',
       );
       context.go('/orders');
     }
@@ -108,25 +113,16 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
   }
 
   void _showCancelDialog() {
-    showDialog(
+    AppDialogs.showConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Batalkan Pembayaran?'),
-        content: const Text('Apakah Anda yakin ingin keluar dari halaman pembayaran?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Lanjutkan Pembayaran'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              context.go('/orders');
-            },
-            child: const Text('Ya, Keluar', style: TextStyle(color: AppTheme.error)),
-          ),
-        ],
-      ),
+      title: 'Batalkan Pembayaran?',
+      message: 'Apakah Anda yakin ingin keluar dari halaman pembayaran?',
+      confirmText: 'Ya, Keluar',
+      confirmColor: AppTheme.error,
+      onConfirm: () {
+        context.go('/orders');
+      },
+      cancelText: 'Lanjutkan Pembayaran',
     );
   }
 }

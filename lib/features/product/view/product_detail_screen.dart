@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../repository/product_repository.dart';
 import '../model/product_model.dart';
 import '../../cart/repository/cart_repository.dart';
@@ -258,8 +259,10 @@ class ProductDetailScreen extends HookConsumerWidget {
                       if (quantity.value < product.stock) {
                         quantity.value++;
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Stok tidak mencukupi')),
+                        AppDialogs.showErrorDialog(
+                          context: context,
+                          title: 'Stok Habis',
+                          message: 'Stok tidak mencukupi untuk jumlah yang Anda inginkan.',
                         );
                       }
                     },
@@ -283,14 +286,18 @@ class ProductDetailScreen extends HookConsumerWidget {
                       weight: product.weight,
                     ));
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${product.name} ditambahkan ke keranjang')),
+                      AppDialogs.showAddToCartDialog(
+                        context: context,
+                        productName: product.name,
+                        onGoToCart: () => context.go('/cart'),
                       );
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: AppTheme.error),
+                      AppDialogs.showErrorDialog(
+                        context: context,
+                        title: 'Gagal',
+                        message: e.toString().replaceAll('Exception: ', ''),
                       );
                     }
                   }

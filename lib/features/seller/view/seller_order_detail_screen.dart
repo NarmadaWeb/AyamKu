@@ -5,6 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_dialogs.dart';
 import '../../orders/model/order.dart';
 import '../../orders/repository/order_repository.dart';
 
@@ -326,14 +327,18 @@ class SellerOrderDetailScreen extends HookConsumerWidget {
               try {
                 await ref.read(orderRepositoryProvider).updateOrderStatus(order.id, nextStatus);
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Status diperbarui menjadi $nextStatus'), backgroundColor: Colors.green),
+                  AppDialogs.showSuccessDialog(
+                    context: context,
+                    title: 'Berhasil',
+                    message: 'Status diperbarui menjadi $nextStatus',
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal memperbarui status: $e'), backgroundColor: AppTheme.error),
+                  AppDialogs.showErrorDialog(
+                    context: context,
+                    title: 'Gagal',
+                    message: 'Gagal memperbarui status: $e',
                   );
                 }
               }
@@ -385,25 +390,32 @@ class SellerOrderDetailScreen extends HookConsumerWidget {
   }
 
   void _showCancelConfirmation(BuildContext context, WidgetRef ref, OrderModel order) {
-    showDialog(
+    AppDialogs.showConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Batalkan Pesanan'),
-        content: const Text('Apakah Anda yakin ingin membatalkan pesanan ini?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Tidak')),
-          TextButton(
-            onPressed: () async {
-              await ref.read(orderRepositoryProvider).updateOrderStatus(order.id, 'Dibatalkan');
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pesanan dibatalkan')));
-              }
-            },
-            child: const Text('Ya, Batalkan', style: TextStyle(color: AppTheme.error)),
-          ),
-        ],
-      ),
+      title: 'Batalkan Pesanan',
+      message: 'Apakah Anda yakin ingin membatalkan pesanan ini?',
+      confirmText: 'Ya, Batalkan',
+      confirmColor: AppTheme.error,
+      onConfirm: () async {
+        try {
+          await ref.read(orderRepositoryProvider).updateOrderStatus(order.id, 'Dibatalkan');
+          if (context.mounted) {
+            AppDialogs.showSuccessDialog(
+              context: context,
+              title: 'Berhasil',
+              message: 'Pesanan telah dibatalkan',
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            AppDialogs.showErrorDialog(
+              context: context,
+              title: 'Gagal',
+              message: 'Gagal membatalkan pesanan: $e',
+            );
+          }
+        }
+      },
     );
   }
 }
