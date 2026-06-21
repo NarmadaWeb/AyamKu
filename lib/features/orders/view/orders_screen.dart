@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -22,7 +23,7 @@ class OrdersScreen extends HookConsumerWidget {
     // Auto-check pending Midtrans payments on entry
     useEffect(() {
       final orders = ordersState.asData?.value;
-      if (orders != null) {
+      if (orders != null && !kIsWeb) {
         for (final order in orders) {
           if (order.paymentStatus == 'pending' &&
               order.paymentMethod != 'Bayar di Tempat (COD)' &&
@@ -254,6 +255,15 @@ class OrdersScreen extends HookConsumerWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () async {
+                   if (kIsWeb) {
+                     AppDialogs.showErrorDialog(
+                       context: context,
+                       title: 'Fitur Tidak Tersedia',
+                       message: 'Cek status otomatis tidak tersedia di web karena batasan keamanan browser. Silakan gunakan aplikasi mobile atau tunggu beberapa saat hingga sistem memperbarui status Anda secara otomatis.',
+                     );
+                     return;
+                   }
+
                    try {
                      final midtransId = order.midtransOrderId ?? order.id;
                      final status = await ref.read(midtransServiceProvider).checkTransactionStatus(midtransId);
